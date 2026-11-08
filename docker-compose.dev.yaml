@@ -1,57 +1,65 @@
 services:
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: imessage-db
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Developer
-      MSSQL_SA_PASSWORD: ${SA_PASSWORD:?Set SA_PASSWORD in .env}
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD}
     ports:
       - "1433:1433"
     volumes:
-      - sql-data-dev:/var/opt/mssql
-    healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$SA_PASSWORD\" -C -Q \"SELECT 1\" -b -o /dev/null"]
-      interval: 10s
-      timeout: 5s
-      retries: 15
-      start_period: 30s
+      - sql-data:/var/opt/mssql
 
   api:
     build:
       context: ./Api
-      target: development
+      dockerfile: Dockerfile
+    container_name: imessage-api
     environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__Default: "Server=db;Database=iMessage;User Id=sa;Password=${SA_PASSWORD:?Set SA_PASSWORD in .env};TrustServerCertificate=True"
-      JwtSettings__Secret: ${JWT_SECRET:?Set JWT_SECRET in .env}
-      JwtSettings__Issuer: ${JWT_ISSUER:-iMessage}
-      JwtSettings__Audience: ${JWT_AUDIENCE:-iMessage-web}
-      AngularClient: http://localhost:4200
-      ASPNETCORE_URLS: http://+:8080
-    ports:
-      - "8080:8080"
+      ASPNETCORE_URLS: "https://+:443"
+      ConnectionStrings__Default: "Server=db,1433;Database=iMessage;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True"
+
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/localhost.pem
+      ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /https/localhost-key.pem
+
+      JwtSettings__Secret: ${JWT_SECRET}
+      JwtSettings__Issuer: ${JWT_ISSUER}
+      JwtSettings__Audience: ${JWT_AUDIENCE}
+      JwtSettings__ExpirationInMinutes: 5
+      JwtSettings__RefreshTokenExpirationInDays: 7
+      EmailSettings__Username: ${EMAIL_USERNAME}
+      EmailSettings__Server: ${EMAIL_SERVER}
+      EmailSettings__Port: 587
+      EmailSettings__SenderName: ${EMAIL_SENDER_NAME}
+      EmailSettings__SenderEmail: ${EMAIL_SENDER_EMAIL}
+      EmailSettings__Password: ${EMAIL_PASSWORD}
+      EmailSettings__UseTls: true
+
+      AngularClient: https://localhost:4200
+
     volumes:
-      - ./Api:/src
-      - api-bin:/src/bin
-      - api-obj:/src/obj
+      - ./certs/localhost.pem:/https/localhost.pem:ro
+      - ./certs/localhost-key.pem:/https/localhost-key.pem:ro
+
+    ports:
+      - "7005:443"
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
   web:
     build:
       context: ./web
-      target: development
+      dockerfile: Dockerfile
+    container_name: imessage-web
     ports:
-      - "4200:4200"
+      - "5000:80"
+      - "4200:443"
     volumes:
-      - ./web:/app
-      - web-node-modules:/app/node_modules
+      - ./certs:/etc/nginx/certs:ro
     depends_on:
       - api
+    restart: unless-stopped
 
 volumes:
-  sql-data-dev:
-  api-bin:
-  api-obj:
-  web-node-modules:
+  sql-data:
