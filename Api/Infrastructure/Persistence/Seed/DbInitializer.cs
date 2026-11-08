@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Api.Domain.Entities;
-using Api.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

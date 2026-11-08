@@ -35,7 +35,6 @@ public sealed class Login : IEndpoint
         string? TwoFactorCode = null,
         string? RecoveryCode = null) : IRequest<Result<LoginResponse>>;
 
-
     public sealed class Validator : AbstractValidator<Command>
     {
         public Validator()
@@ -170,8 +169,7 @@ public sealed class Login : IEndpoint
         .WithName("Login")
         .WithTags("Auth")
         .Produces<LoginResponse>(StatusCodes.Status200OK)
-        .Produces(StatusCodes.Status401Unauthorized)
-        .RequireRateLimiting("AuthLimiter");
+        .Produces(StatusCodes.Status401Unauthorized);
     }
 
 }

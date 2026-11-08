@@ -33,8 +33,8 @@ public sealed class UpdateProfile : IEndpoint
                 .When(request => !string.IsNullOrWhiteSpace(request.ProfilePictureUrl));
             RuleFor(request => request.ProfilePictureUrl)
                 .Must(value => string.IsNullOrWhiteSpace(value) ||
-                               Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) &&
-                               uri.Scheme == Uri.UriSchemeHttps)
+                               (Uri.TryCreate(value, UriKind.Absolute, out Uri? uri) &&
+                               uri.Scheme == Uri.UriSchemeHttps))
                 .WithMessage("Profile picture URL must be a valid HTTPS URL.");
         }
     }

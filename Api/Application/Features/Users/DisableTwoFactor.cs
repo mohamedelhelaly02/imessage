@@ -46,17 +46,21 @@ public sealed class DisableTwoFactor : IEndpoint
 
             IdentityResult disabled = await userManager.SetTwoFactorEnabledAsync(user, false);
             if (!disabled.Succeeded)
+            {
                 return Result.Failure(Error.Validation(
                     "User.TWO_FACTOR_DISABLE_FAILED",
                     "Unable to disable two-factor authentication.",
                     AuthenticatorSetup.ToErrors(disabled)));
+            }
 
             IdentityResult resetKey = await userManager.ResetAuthenticatorKeyAsync(user);
             if (!resetKey.Succeeded)
+            {
                 return Result.Failure(Error.Validation(
                     "User.AUTHENTICATOR_RESET_FAILED",
                     "Two-factor authentication was disabled, but the authenticator key could not be reset.",
                     AuthenticatorSetup.ToErrors(resetKey)));
+            }
 
             return Result.Success();
         }
@@ -69,7 +73,6 @@ public sealed class DisableTwoFactor : IEndpoint
             .WithName("DisableTwoFactor")
             .WithTags("Users")
             .RequireAuthorization()
-            .RequireRateLimiting("AuthLimiter")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }

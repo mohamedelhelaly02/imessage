@@ -51,7 +51,6 @@ public sealed class RegenerateRecoveryCodes : IEndpoint
             .WithName("RegenerateRecoveryCodes")
             .WithTags("Users")
             .RequireAuthorization()
-            .RequireRateLimiting("AuthLimiter")
             .Produces<IReadOnlyList<string>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }

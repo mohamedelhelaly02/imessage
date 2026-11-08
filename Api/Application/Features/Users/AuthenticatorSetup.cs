@@ -1,12 +1,12 @@
-using MediatR;
-using Microsoft.AspNetCore.Identity;
-using FluentValidation;
 using Api.Application.Features.Auth;
 using Api.Application.Interfaces;
-using Api.Shared.Helpers;
 using Api.Domain.Entities;
-using Api.Shared.Extensions;
 using Api.Shared.Abstraction;
+using Api.Shared.Extensions;
+using Api.Shared.Helpers;
+using FluentValidation;
+using MediatR;
+using Microsoft.AspNetCore.Identity;
 
 namespace Api.Application.Features.Users;
 
@@ -70,7 +70,6 @@ public sealed class AuthenticatorSetup : IEndpoint
             .WithName("GetAuthenticatorSetup")
             .WithTags("Users")
             .RequireAuthorization()
-            .RequireRateLimiting("AuthLimiter")
             .Produces<Response>(StatusCodes.Status200OK);
     }
 }

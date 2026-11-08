@@ -59,7 +59,6 @@ public sealed class Refresh : IEndpoint
 
                 CookieHelper.DeleteRefreshTokenCookie(contextAccessor.HttpContext.Response);
 
-
                 logger.LogInformation("Token is re-used");
 
                 return Result<Login.AuthResponse>.Failure(Error.Unauthorized());
@@ -134,7 +133,6 @@ public sealed class Refresh : IEndpoint
             .WithName("Refresh")
             .WithTags("Auth")
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .Produces<Login.AuthResponse>(StatusCodes.Status200OK)
-            .RequireRateLimiting("AuthLimiter");
+            .Produces<Login.AuthResponse>(StatusCodes.Status200OK);
     }
 }

@@ -37,7 +37,6 @@ public sealed class Register : IEndpoint
         }
     }
 
-
     public sealed class Handler(
         UserManager<User> userManager,
         IEmailLinkGenerator emailLinkGenerator,
@@ -68,7 +67,6 @@ public sealed class Register : IEndpoint
             {
                 var errorDictionary = new Dictionary<string, List<string>>();
 
-
                 foreach (var error in createResult.Errors)
                 {
                     string fieldName = error.Code.Contains("Password", StringComparison.OrdinalIgnoreCase)
@@ -98,7 +96,6 @@ public sealed class Register : IEndpoint
                 return Result<string>.Failure(UserErrors.RoleAssignmentFailed(errors));
             }
 
-
             string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
             var encodedEmail = Base64Url.EncodeToString(Encoding.UTF8.GetBytes(user.Email));
@@ -124,8 +121,7 @@ public sealed class Register : IEndpoint
         .WithTags("Auth")
         .ProducesProblem(StatusCodes.Status409Conflict)
         .ProducesProblem(StatusCodes.Status400BadRequest)
-        .Produces(StatusCodes.Status200OK)
-        .RequireRateLimiting("AuthLimiter");
+        .Produces(StatusCodes.Status200OK);
     }
 
 }

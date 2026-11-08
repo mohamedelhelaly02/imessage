@@ -8,7 +8,6 @@ using Api.Shared.Helpers;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 
 namespace Api.Application.Features.Users;
 
@@ -88,7 +87,6 @@ public sealed class ChangePassword : IEndpoint
             .WithName("ChangeMyPassword")
             .WithTags("Users")
             .RequireAuthorization()
-            .RequireRateLimiting("AuthLimiter")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }

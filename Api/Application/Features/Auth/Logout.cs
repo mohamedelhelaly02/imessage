@@ -47,7 +47,6 @@ public sealed class Logout : IEndpoint
         }
     }
 
-
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("auth/logout", async (ISender sender) =>
@@ -59,8 +58,7 @@ public sealed class Logout : IEndpoint
             .AllowAnonymous()
             .WithName("Logout")
             .WithTags("Auth")
-            .Produces(StatusCodes.Status204NoContent)
-            .RequireRateLimiting("AuthLimiter");
+            .Produces(StatusCodes.Status204NoContent);
     }
 
 }

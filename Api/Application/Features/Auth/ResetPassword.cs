@@ -78,7 +78,6 @@ public sealed class ResetPassword : IEndpoint
             .AllowAnonymous()
             .WithName("ResetPassword")
             .WithTags("Auth")
-            .Produces(StatusCodes.Status200OK)
-            .RequireRateLimiting("AuthLimiter");
+            .Produces(StatusCodes.Status200OK);
     }
 }

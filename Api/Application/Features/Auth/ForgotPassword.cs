@@ -56,7 +56,6 @@ public sealed class ForgotPassword : IEndpoint
             .AllowAnonymous()
             .WithName("ForgotPassword")
             .WithTags("Auth")
-            .Produces<string>(StatusCodes.Status200OK)
-            .RequireRateLimiting("AuthLimiter");
+            .Produces<string>(StatusCodes.Status200OK);
     }
 }

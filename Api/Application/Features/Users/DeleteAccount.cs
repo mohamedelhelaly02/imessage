@@ -98,7 +98,6 @@ public sealed class DeleteAccount : IEndpoint
             .WithName("DeleteMyAccount")
             .WithTags("Users")
             .RequireAuthorization()
-            .RequireRateLimiting("AuthLimiter")
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }

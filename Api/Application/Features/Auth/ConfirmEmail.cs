@@ -50,15 +50,14 @@ public sealed class ConfirmEmail : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("auth/confirm-email", async (Command command, ISender sender) =>
-            {
-                Result<string> result = await sender.Send(command);
-                return result.ToResponse();
-            })
+        {
+            Result<string> result = await sender.Send(command);
+            return result.ToResponse();
+        })
             .AllowAnonymous()
             .WithName("ConfirmEmail")
             .WithTags("Auth")
             .Produces(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .RequireRateLimiting("AuthLimiter");
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
     }
 }

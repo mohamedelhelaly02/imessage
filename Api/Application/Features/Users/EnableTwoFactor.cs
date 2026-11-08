@@ -76,7 +76,6 @@ public sealed class EnableTwoFactor : IEndpoint
             .WithName("EnableTwoFactor")
             .WithTags("Users")
             .RequireAuthorization()
-            .RequireRateLimiting("AuthLimiter")
             .Produces<IReadOnlyList<string>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }
