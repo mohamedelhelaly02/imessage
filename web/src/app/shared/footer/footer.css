@@ -1,0 +1,162 @@
+.imessage-footer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    padding: 16px 0;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    font-size: 11px;
+    color: #8e8e93;
+    user-select: none;
+}
+
+.imessage-copyright {
+    opacity: 0.8;
+    letter-spacing: -0.01em;
+}
+
+.imessage-lang-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.imessage-lang-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(120, 120, 128, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1c1c1e;
+    transition: all 0.2s ease;
+}
+
+.imessage-lang-trigger:hover {
+    background: rgba(120, 120, 128, 0.12);
+}
+.imessage-lang-code {
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #1c1c1e6a;
+}
+
+.imessage-lang-chevron {
+    width: 12px;
+    height: 12px;
+    stroke-width: 3;
+    transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    color: #8e8e93;
+}
+
+.imessage-lang-chevron.rotate {
+    transform: rotate(180deg);
+}
+
+.imessage-lang-menu {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 160px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    padding: 6px;
+    z-index: 100;
+    animation: popoverFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.imessage-lang-header {
+    padding: 6px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8e8e93;
+    border-bottom: 1px solid rgba(60, 60, 67, 0.08);
+    margin-bottom: 4px;
+}
+
+.imessage-lang-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 10px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: 13px;
+    color: #1c1c1e;
+    transition: background 0.1s ease;
+}
+
+.imessage-lang-option:hover {
+    background: rgba(0, 122, 255, 0.1);
+    color: #007aff;
+}
+
+.imessage-lang-option.selected {
+    font-weight: 600;
+    color: #007aff;
+}
+
+.imessage-lang-option-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.imessage-lang-check {
+    width: 14px;
+    height: 14px;
+    color: #007aff;
+}
+
+@keyframes popoverFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(4px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1);
+    }
+}
+
+
+.imessage-lang-flag {
+    display: inline-block;
+    width: 18px;
+    height: 14px;
+    border-radius: 2px;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+.flag-us {
+    background-image: url('https://flagcdn.com/us.svg');
+}
+
+.flag-eg {
+    background-image: url('https://flagcdn.com/eg.svg');
+}
+
+.flag-fr {
+    background-image: url('https://flagcdn.com/fr.svg');
+}

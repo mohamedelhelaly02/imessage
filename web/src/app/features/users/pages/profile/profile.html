@@ -1,0 +1,294 @@
+<main class="profile-page" aria-labelledby="profile-title">
+  <header class="profile-page__header">
+    <div>
+      <p class="profile-page__eyebrow">{{ 'PROFILE.EYEBROW' | translate }}</p>
+      <h1 id="profile-title">{{ 'PROFILE.TITLE' | translate }}</h1>
+      <p>{{ 'PROFILE.SUBTITLE' | translate }}</p>
+    </div>
+    @if (profile(); as currentProfile) {
+      <div class="profile-page__identity">
+        @if (currentProfile.profilePictureUrl) {
+          <img [src]="currentProfile.profilePictureUrl" [alt]="currentProfile.displayName" />
+        } @else {
+          <span aria-hidden="true">{{ currentProfile.displayName.slice(0, 1) }}</span>
+        }
+        <div>
+          <strong>{{ currentProfile.displayName }}</strong>
+          <small>{{ currentProfile.email }}</small>
+        </div>
+      </div>
+    }
+  </header>
+
+  @if (errorMessage(); as message) {
+    <p class="profile-alert profile-alert--error" role="alert">{{ message }}</p>
+  }
+  @if (successMessage(); as message) {
+    <p class="profile-alert profile-alert--success" role="status">{{ message | translate }}</p>
+  }
+  @if (isLoading()) {
+    <p class="profile-page__loading" role="status">{{ 'PROFILE.LOADING' | translate }}</p>
+  } @else {
+    <div class="profile-grid">
+      <section class="profile-card">
+        <h2>{{ 'PROFILE.SECTIONS.DETAILS' | translate }}</h2>
+        <p class="profile-card__description">{{ 'PROFILE.DETAILS_DESCRIPTION' | translate }}</p>
+
+        <form class="profile-form" [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+          <label>
+            <span>{{ 'PROFILE.FIELDS.DISPLAY_NAME' | translate }}</span>
+            <input type="text" formControlName="displayName" autocomplete="name" />
+          </label>
+          @if (
+            profileForm.controls.displayName.invalid && profileForm.controls.displayName.touched
+          ) {
+            <small class="profile-form__error">{{
+              'PROFILE.ERRORS.DISPLAY_NAME' | translate
+            }}</small>
+          }
+          <label>
+            <span>{{ 'PROFILE.FIELDS.USERNAME' | translate }}</span>
+            <input type="text" formControlName="userName" autocomplete="username" />
+          </label>
+          <label>
+            <span>{{ 'PROFILE.FIELDS.EMAIL' | translate }}</span>
+            <input type="email" [value]="profile()?.email ?? ''" disabled />
+          </label>
+          <label>
+            <span>{{ 'PROFILE.FIELDS.PICTURE_URL' | translate }}</span>
+            <input type="url" formControlName="profilePictureUrl" placeholder="https://" />
+          </label>
+          <button class="profile-button" type="submit" [disabled]="isSavingProfile()">
+            {{
+              (isSavingProfile() ? 'PROFILE.BUTTONS.SAVING' : 'PROFILE.BUTTONS.SAVE') | translate
+            }}
+          </button>
+        </form>
+      </section>
+
+      <section class="profile-card">
+        <h2>{{ 'PROFILE.SECTIONS.PASSWORD' | translate }}</h2>
+        <p class="profile-card__description">{{ 'PROFILE.PASSWORD_DESCRIPTION' | translate }}</p>
+        <form class="profile-form" [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+          <label>
+            <span>{{ 'PROFILE.FIELDS.CURRENT_PASSWORD' | translate }}</span>
+            <input
+              type="password"
+              formControlName="currentPassword"
+              autocomplete="current-password"
+            />
+          </label>
+          <label>
+            <span>{{ 'PROFILE.FIELDS.NEW_PASSWORD' | translate }}</span>
+            <input type="password" formControlName="newPassword" autocomplete="new-password" />
+          </label>
+          @if (
+            passwordForm.controls.newPassword.invalid && passwordForm.controls.newPassword.touched
+          ) {
+            <small class="profile-form__error">{{ 'PROFILE.ERRORS.PASSWORD' | translate }}</small>
+          }
+          @if (profile()?.twoFactorEnabled) {
+            <label>
+              <span>{{ 'PROFILE.FIELDS.AUTHENTICATOR_CODE' | translate }}</span>
+              <input
+                type="text"
+                inputmode="numeric"
+                maxlength="6"
+                formControlName="twoFactorCode"
+                autocomplete="one-time-code"
+              />
+            </label>
+            @if (
+              passwordForm.controls.twoFactorCode.invalid &&
+              passwordForm.controls.twoFactorCode.touched
+            ) {
+              <small class="profile-form__error">{{ 'PROFILE.ERRORS.CODE' | translate }}</small>
+            }
+          }
+          <button class="profile-button" type="submit" [disabled]="isChangingPassword()">
+            {{ 'PROFILE.BUTTONS.CHANGE_PASSWORD' | translate }}
+          </button>
+        </form>
+      </section>
+
+      <section class="profile-card profile-card--wide">
+        <h2>{{ 'PROFILE.SECTIONS.TWO_FACTOR' | translate }}</h2>
+        <p class="profile-card__description">{{ 'PROFILE.TWO_FACTOR_DESCRIPTION' | translate }}</p>
+
+        @if (profile()?.twoFactorEnabled) {
+          <div class="profile-status profile-status--enabled">
+            <span>{{ 'PROFILE.TWO_FACTOR_ENABLED' | translate }}</span>
+            <small>
+              {{
+                'PROFILE.RECOVERY_CODES_LEFT' | translate: { count: profile()?.recoveryCodesLeft }
+              }}
+            </small>
+          </div>
+
+          @if (recoveryCodes(); as codes) {
+            <div class="recovery-codes" role="status">
+              <h3>{{ 'PROFILE.RECOVERY_CODES_TITLE' | translate }}</h3>
+              <p>{{ 'PROFILE.RECOVERY_CODES_WARNING' | translate }}</p>
+              <ul>
+                @for (code of codes; track code) {
+                  <li>
+                    <code>{{ code }}</code>
+                  </li>
+                }
+              </ul>
+              <button
+                class="profile-button profile-button--secondary"
+                type="button"
+                (click)="dismissRecoveryCodes()"
+              >
+                {{ 'PROFILE.BUTTONS.DONE_SAVING_CODES' | translate }}
+              </button>
+            </div>
+          } @else {
+            <div class="profile-two-factor-actions">
+              <form
+                class="profile-form"
+                [formGroup]="recoveryCodesForm"
+                (ngSubmit)="regenerateRecoveryCodes()"
+              >
+                <label>
+                  <span>{{ 'PROFILE.FIELDS.PASSWORD_FOR_CODES' | translate }}</span>
+                  <input
+                    type="password"
+                    formControlName="password"
+                    autocomplete="current-password"
+                  />
+                </label>
+                <button
+                  class="profile-button profile-button--secondary"
+                  type="submit"
+                  [disabled]="isManagingTwoFactor()"
+                >
+                  {{ 'PROFILE.BUTTONS.REGENERATE_CODES' | translate }}
+                </button>
+              </form>
+
+              <form
+                class="profile-form"
+                [formGroup]="disableTwoFactorForm"
+                (ngSubmit)="disableTwoFactor()"
+              >
+                <label>
+                  <span>{{ 'PROFILE.FIELDS.CURRENT_PASSWORD' | translate }}</span>
+                  <input
+                    type="password"
+                    formControlName="password"
+                    autocomplete="current-password"
+                  />
+                </label>
+                <label>
+                  <span>{{ 'PROFILE.FIELDS.AUTHENTICATOR_CODE' | translate }}</span>
+                  <input
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="6"
+                    formControlName="code"
+                    autocomplete="one-time-code"
+                  />
+                </label>
+                <button
+                  class="profile-button profile-button--danger"
+                  type="submit"
+                  [disabled]="isManagingTwoFactor()"
+                >
+                  {{ 'PROFILE.BUTTONS.DISABLE_TWO_FACTOR' | translate }}
+                </button>
+              </form>
+            </div>
+          }
+        } @else if (authenticatorSetup(); as setup) {
+          <div class="authenticator-setup">
+            <p>{{ 'PROFILE.AUTHENTICATOR.INSTRUCTIONS' | translate }}</p>
+            <a [href]="setup.authenticatorUri">{{
+              'PROFILE.AUTHENTICATOR.OPEN_APP' | translate
+            }}</a>
+            <p>{{ 'PROFILE.AUTHENTICATOR.MANUAL_KEY' | translate }}</p>
+            <code class="authenticator-setup__key">{{ setup.sharedKey }}</code>
+            <form
+              class="profile-form"
+              [formGroup]="authenticatorForm"
+              (ngSubmit)="enableTwoFactor()"
+            >
+              <label>
+                <span>{{ 'PROFILE.FIELDS.AUTHENTICATOR_CODE' | translate }}</span>
+                <input
+                  type="text"
+                  inputmode="numeric"
+                  maxlength="6"
+                  formControlName="code"
+                  autocomplete="one-time-code"
+                />
+              </label>
+              <button class="profile-button" type="submit" [disabled]="isManagingTwoFactor()">
+                {{ 'PROFILE.BUTTONS.VERIFY_AND_ENABLE' | translate }}
+              </button>
+            </form>
+          </div>
+        } @else {
+          <form
+            class="profile-form"
+            [formGroup]="setupTwoFactorForm"
+            (ngSubmit)="beginTwoFactorSetup()"
+          >
+            <label>
+              <span>{{ 'PROFILE.FIELDS.CURRENT_PASSWORD' | translate }}</span>
+              <input type="password" formControlName="password" autocomplete="current-password" />
+            </label>
+            <button class="profile-button" type="submit" [disabled]="isManagingTwoFactor()">
+              {{ 'PROFILE.BUTTONS.SETUP_TWO_FACTOR' | translate }}
+            </button>
+          </form>
+        }
+      </section>
+
+      <section class="profile-card profile-card--danger profile-card--wide">
+        <h2>{{ 'PROFILE.SECTIONS.DELETE_ACCOUNT' | translate }}</h2>
+        <p class="profile-card__description">{{ 'PROFILE.DELETE_DESCRIPTION' | translate }}</p>
+        <form
+          class="profile-form profile-form--delete"
+          [formGroup]="deleteAccountForm"
+          (ngSubmit)="deleteAccount()"
+        >
+          <label>
+            <span>{{ 'PROFILE.FIELDS.CURRENT_PASSWORD' | translate }}</span>
+            <input type="password" formControlName="password" autocomplete="current-password" />
+          </label>
+          <label class="profile-form__confirmation">
+            <input type="checkbox" formControlName="confirm" />
+            <span>{{ 'PROFILE.DELETE_CONFIRMATION' | translate }}</span>
+          </label>
+          @if (profile()?.twoFactorEnabled) {
+            <label>
+              <span>{{ 'PROFILE.FIELDS.AUTHENTICATOR_CODE' | translate }}</span>
+              <input
+                type="text"
+                inputmode="numeric"
+                maxlength="6"
+                formControlName="twoFactorCode"
+                autocomplete="one-time-code"
+              />
+            </label>
+            @if (
+              deleteAccountForm.controls.twoFactorCode.invalid &&
+              deleteAccountForm.controls.twoFactorCode.touched
+            ) {
+              <small class="profile-form__error">{{ 'PROFILE.ERRORS.CODE' | translate }}</small>
+            }
+          }
+          <button
+            class="profile-button profile-button--danger"
+            type="submit"
+            [disabled]="isDeletingAccount()"
+          >
+            {{ 'PROFILE.BUTTONS.DELETE_ACCOUNT' | translate }}
+          </button>
+        </form>
+      </section>
+    </div>
+  }
+</main>

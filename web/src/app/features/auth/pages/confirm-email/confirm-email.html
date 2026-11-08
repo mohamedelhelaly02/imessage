@@ -1,0 +1,67 @@
+<section
+  class="confirm-card"
+  [class.confirm-card--success]="state() === 'success'"
+  [class.confirm-card--error]="state() === 'error' || state() === 'invalid'"
+  [attr.aria-busy]="state() === 'verifying'"
+  [attr.dir]="isRtl() ? 'rtl' : 'ltr'"
+  aria-live="polite"
+>
+  <div class="confirm-card__icon" aria-hidden="true">
+    @switch (state()) {
+      @case ('verifying') {
+        <span class="confirm-card__spinner"></span>
+      }
+      @case ('success') {
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="m5 12.5 4.5 4.5L19 7" />
+        </svg>
+      }
+      @default {
+        <svg viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 8v5m0 3.5v.01M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3l-7.5-13.1a2 2 0 0 0-3.4 0Z"
+          />
+        </svg>
+      }
+    }
+  </div>
+
+  @switch (state()) {
+    @case ('verifying') {
+      <h1 class="confirm-card__title">{{ 'CONFIRM_EMAIL.VERIFYING.TITLE' | translate }}</h1>
+      <p class="confirm-card__description">
+        {{ 'CONFIRM_EMAIL.VERIFYING.DESCRIPTION' | translate }}
+      </p>
+    }
+    @case ('success') {
+      <h1 class="confirm-card__title">{{ 'CONFIRM_EMAIL.SUCCESS.TITLE' | translate }}</h1>
+      <p class="confirm-card__description">
+        {{ 'CONFIRM_EMAIL.SUCCESS.DESCRIPTION' | translate }}
+      </p>
+    }
+    @case ('error') {
+      <h1 class="confirm-card__title">{{ 'CONFIRM_EMAIL.ERROR.TITLE' | translate }}</h1>
+      @if (errorMessage(); as message) {
+        <p class="confirm-card__description confirm-card__description--error" role="alert">
+          {{ message }}
+        </p>
+      } @else {
+        <p class="confirm-card__description confirm-card__description--error" role="alert">
+          {{ 'CONFIRM_EMAIL.ERROR.DESCRIPTION' | translate }}
+        </p>
+      }
+    }
+    @case ('invalid') {
+      <h1 class="confirm-card__title">{{ 'CONFIRM_EMAIL.INVALID.TITLE' | translate }}</h1>
+      <p class="confirm-card__description confirm-card__description--error" role="alert">
+        {{ 'CONFIRM_EMAIL.INVALID.DESCRIPTION' | translate }}
+      </p>
+    }
+  }
+
+  @if (state() !== 'verifying') {
+    <a class="confirm-card__button" routerLink="/auth/login">
+      {{ 'CONFIRM_EMAIL.BUTTON.LOGIN' | translate }}
+    </a>
+  }
+</section>

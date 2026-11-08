@@ -1,0 +1,139 @@
+.imessage-composer {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    padding: 12px 18px max(12px, env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.94);
+    border-top: 1px solid #e9edf3;
+    font-family: inherit;
+    user-select: none;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.composer-action-btn,
+.composer-audio-btn,
+.composer-send-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: transform 0.1s ease, background-color 0.15s ease;
+}
+
+.composer-action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f0f3f8;
+    color: #61718a;
+    margin-bottom: 1px;
+    flex-shrink: 0;
+}
+
+.composer-action-btn:hover {
+    background: #e4ebf5;
+}
+
+.composer-action-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.composer-input-wrapper {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #dfe6f0;
+    border-radius: 18px;
+    padding: 7px 12px;
+    min-height: 42px;
+    box-sizing: border-box;
+}
+
+.composer-input-wrapper:focus-within {
+    border-color: #92b8fb;
+    box-shadow: 0 0 0 3px rgba(52, 120, 246, 0.08);
+}
+
+.composer-textarea {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    min-width: 0;
+    font-size: 14px;
+    font-family: inherit;
+    color: #1c1c1e;
+    resize: none;
+    max-height: 120px;
+    line-height: 1.4;
+    padding: 0;
+}
+
+.composer-textarea::placeholder {
+    color: #8e8e93;
+}
+
+.composer-audio-btn {
+    width: 24px;
+    height: 24px;
+    color: #8e8e93;
+    margin-inline-start: 4px;
+    flex-shrink: 0;
+}
+
+.composer-audio-btn:hover {
+    color: #1c1c1e;
+}
+
+.composer-audio-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.composer-send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #d5dce7;
+    color: #ffffff;
+    margin-bottom: 1px;
+    flex-shrink: 0;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.composer-send-btn.active {
+    background: #3478f6;
+}
+
+.composer-send-btn.active:hover {
+    background: #2469e7;
+}
+
+.composer-send-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+@media (max-width: 600px) {
+    .imessage-composer {
+        gap: 7px;
+        padding: 9px 11px max(9px, env(safe-area-inset-bottom));
+    }
+
+    .composer-action-btn,
+    .composer-send-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .composer-input-wrapper {
+        min-height: 40px;
+        padding-inline: 10px;
+    }
+}

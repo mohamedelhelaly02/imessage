@@ -1,0 +1,61 @@
+<div class="imessage-chats-list">
+  @for (conversation of conversations(); track conversation.publicId) {
+    <button
+      type="button"
+      class="imessage-chat-item"
+      (click)="selectConversation(conversation)"
+      [class.active]="conversation.publicId == selected()?.publicId"
+      [attr.aria-pressed]="conversation.publicId == selected()?.publicId"
+    >
+      <span class="imessage-avatar-wrapper">
+        @if (!isGroup(conversation)) {
+          <img
+            [src]="getOtherParticipant(conversation)?.pictureUrl"
+            [alt]="getOtherParticipant(conversation)?.displayName"
+            class="imessage-avatar"
+          />
+        } @else {
+          <span class="imessage-group-avatar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+              />
+            </svg>
+          </span>
+        }
+        @if (!isGroup(conversation) && isUserOnline(conversation)) {
+          <span class="imessage-online-dot"></span>
+        }
+      </span>
+
+      <span class="imessage-chat-info">
+        <span class="imessage-chat-top">
+          <span class="imessage-chat-name">{{ getDisplayName(conversation) }}</span>
+          @if (conversation.lastMessageAtUtc) {
+            <span class="imessage-chat-time">{{
+              conversation.lastMessageAtUtc | date: 'shortTime'
+            }}</span>
+          }
+        </span>
+        <span class="imessage-chat-bottom">
+          @if (isConversationTyping(conversation.id)) {
+            <span class="chat-header__status chat-header__status--typing">
+              {{ 'CHAT.LIST.TYPING' | translate }}
+              <span class="typing-dots" [attr.aria-label]="'CHAT.LIST.TYPING' | translate">
+                <span></span><span></span><span></span>
+              </span>
+            </span>
+          } @else {
+            <span class="imessage-chat-preview">
+              @if (conversation.lastMessageAtUtc) {
+                {{ conversation.lastMessageAtUtc }}
+              } @else {
+                {{ 'CHAT.LIST.LAST_MESSAGE_SENT' | translate }}
+              }
+            </span>
+          }
+        </span>
+      </span>
+    </button>
+  }
+</div>

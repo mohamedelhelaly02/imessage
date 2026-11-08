@@ -1,0 +1,46 @@
+<div class="imessage-composer">
+  <button
+    class="composer-action-btn"
+    type="button"
+    [attr.aria-label]="'CHAT.COMPOSER.APPS' | translate"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="12" y1="5" x2="12" y2="19"></line>
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+    </svg>
+  </button>
+
+  <div class="composer-input-wrapper">
+    <input
+      class="composer-textarea"
+      [placeholder]="'CHAT.COMPOSER.PLACEHOLDER' | translate"
+      [value]="message()"
+      (input)="onMessageInput($event)"
+    />
+
+    <button
+      class="composer-audio-btn"
+      type="button"
+      [attr.aria-label]="'CHAT.COMPOSER.AUDIO_MESSAGE' | translate"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
+        <line x1="12" y1="19" x2="12" y2="23"></line>
+        <line x1="8" y1="23" x2="16" y2="23"></line>
+      </svg>
+    </button>
+  </div>
+
+  <button
+    class="composer-send-btn"
+    type="button"
+    [class.active]="message().trim().length > 0"
+    (click)="sendMessage()"
+    [attr.aria-label]="'CHAT.COMPOSER.SEND' | translate"
+  >
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 4l-8 8h5v8h6v-8h5z" />
+    </svg>
+  </button>
+</div>

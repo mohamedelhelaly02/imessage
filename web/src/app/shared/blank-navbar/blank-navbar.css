@@ -1,0 +1,136 @@
+:host {
+  --color-text: #1c1c1e;
+  --color-text-secondary: #6e6e73;
+  --color-accent: #0a84ff;
+  --color-danger: #ff3b30;
+  --font-family: -apple-system, 'SF Pro Text', 'Segoe UI', 'Cairo', 'Tahoma', sans-serif;
+  display: block;
+  width: 100%;
+  font-family: var(--font-family);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.blank-navbar {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid #e8edf4;
+}
+
+.blank-navbar__inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  height: 58px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.blank-navbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--color-text);
+  min-width: 0;
+}
+
+.blank-navbar__logo {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 10px;
+  background: #eff6ff;
+}
+
+.blank-navbar__logo svg {
+  width: 100%;
+  height: 100%;
+}
+
+.blank-navbar__name {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.blank-navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.blank-navbar__profile {
+  padding: 8px 12px;
+  border: 1px solid #e8edf4;
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.blank-navbar__profile:hover {
+  background: #f5f8fd;
+  color: var(--color-accent);
+}
+
+.blank-navbar__logout {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.blank-navbar__logout:hover {
+  background: rgba(255, 59, 48, 0.1);
+  color: var(--color-danger);
+}
+
+.blank-navbar__logout svg {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .blank-navbar__inner {
+    height: 54px;
+    padding-inline: 14px;
+  }
+
+  .blank-navbar__actions {
+    gap: 6px;
+  }
+
+  .blank-navbar__logout-label {
+    display: none;
+  }
+
+  .blank-navbar__logout {
+    padding: 8px;
+  }
+
+  .blank-navbar__profile {
+    padding: 8px;
+    font-size: 12px;
+  }
+}

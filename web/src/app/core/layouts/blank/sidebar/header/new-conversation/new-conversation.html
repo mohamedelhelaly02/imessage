@@ -1,0 +1,182 @@
+<button
+  class="imessage-new-chat-btn"
+  type="button"
+  [attr.aria-label]="'CHAT.SIDEBAR_HEADER.NEW_CHAT' | translate"
+  [attr.title]="'CHAT.SIDEBAR_HEADER.NEW_CHAT' | translate"
+  (click)="open()"
+>
+  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m-7-7h14" />
+  </svg>
+</button>
+
+@if (isOpen()) {
+  <div class="new-conversation-overlay" (click)="close()">
+    <section
+      class="new-conversation-dialog"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-labelledby]="'new-conversation-title'"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="new-conversation-dialog__header">
+        <div>
+          <span class="new-conversation-dialog__eyebrow">
+            {{ 'CHAT.NEW_CONVERSATION.EYEBROW' | translate }}
+          </span>
+          <h2 id="new-conversation-title">{{ 'CHAT.NEW_CONVERSATION.TITLE' | translate }}</h2>
+        </div>
+        <button
+          class="new-conversation-dialog__close"
+          type="button"
+          [attr.aria-label]="'CHAT.NEW_CONVERSATION.CLOSE' | translate"
+          (click)="close()"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m6 6 12 12M18 6 6 18" stroke-linecap="round" />
+          </svg>
+        </button>
+      </header>
+
+      <div class="new-conversation-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'private'"
+          [class.active]="mode() === 'private'"
+          (click)="setMode('private')"
+        >
+          {{ 'CHAT.NEW_CONVERSATION.PRIVATE' | translate }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          [attr.aria-selected]="mode() === 'group'"
+          [class.active]="mode() === 'group'"
+          (click)="setMode('group')"
+        >
+          {{ 'CHAT.NEW_CONVERSATION.GROUP' | translate }}
+        </button>
+      </div>
+
+      @if (mode() === 'group') {
+        <label class="new-conversation-label" for="new-group-title">
+          {{ 'CHAT.NEW_CONVERSATION.GROUP_NAME' | translate }}
+        </label>
+        <input
+          id="new-group-title"
+          class="new-conversation-input"
+          type="text"
+          maxlength="100"
+          [placeholder]="'CHAT.NEW_CONVERSATION.GROUP_NAME_PLACEHOLDER' | translate"
+          [value]="groupTitle()"
+          (input)="setGroupTitle($event)"
+        />
+      }
+
+      <label class="new-conversation-label" for="new-contact-search">
+        {{
+          mode() === 'private'
+            ? ('CHAT.NEW_CONVERSATION.CHOOSE_PERSON' | translate)
+            : ('CHAT.NEW_CONVERSATION.ADD_PEOPLE' | translate)
+        }}
+      </label>
+      <input
+        id="new-contact-search"
+        class="new-conversation-input"
+        type="search"
+        [placeholder]="'CHAT.NEW_CONVERSATION.SEARCH_PEOPLE' | translate"
+        [value]="searchQuery()"
+        (input)="setSearchQuery($event)"
+      />
+
+      <div class="new-conversation-users">
+        @if (isLoadingUsers()) {
+          <p class="new-conversation-state">{{ 'CHAT.NEW_CONVERSATION.LOADING' | translate }}</p>
+        } @else if (availableUsers().length === 0) {
+          <p class="new-conversation-state">{{ 'CHAT.NEW_CONVERSATION.NO_PEOPLE' | translate }}</p>
+        } @else {
+          @for (user of availableUsers(); track user.id) {
+            <button
+              class="new-conversation-user"
+              type="button"
+              [class.selected]="
+                mode() === 'private'
+                  ? selectedPrivateUserId() === user.id
+                  : selectedGroupUserIds().has(user.id)
+              "
+              [attr.aria-pressed]="
+                mode() === 'private'
+                  ? selectedPrivateUserId() === user.id
+                  : selectedGroupUserIds().has(user.id)
+              "
+              (click)="mode() === 'private' ? selectPrivateUser(user) : toggleGroupUser(user)"
+            >
+              @if (user.pictureUrl) {
+                <img class="new-conversation-user__avatar" [src]="user.pictureUrl" [alt]="''" />
+              } @else {
+                <span class="new-conversation-user__avatar new-conversation-user__avatar--initial">
+                  {{ getDisplayName(user).slice(0, 1).toUpperCase() }}
+                </span>
+              }
+              <span class="new-conversation-user__details">
+                <strong>{{ getDisplayName(user) }}</strong>
+                @if (user.userName) {
+                  <small>{{ '@' + user.userName }}</small>
+                }
+              </span>
+              <span class="new-conversation-user__select" aria-hidden="true">
+                @if (
+                  mode() === 'private'
+                    ? selectedPrivateUserId() === user.id
+                    : selectedGroupUserIds().has(user.id)
+                ) {
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="m5 12 4 4L19 6" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                }
+              </span>
+            </button>
+          }
+        }
+      </div>
+
+      @if (errorMessage(); as errorMessage) {
+        <p class="new-conversation-error" role="alert">
+          @if (errorMessage.startsWith('NEW_CONVERSATION.')) {
+            {{ errorMessage | translate }}
+          } @else {
+            {{ error() }}
+          }
+        </p>
+      }
+
+      <footer class="new-conversation-dialog__footer">
+        @if (mode() === 'group') {
+          <span class="new-conversation-selected">
+            {{
+              'CHAT.NEW_CONVERSATION.SELECTED_COUNT'
+                | translate: { count: selectedGroupUserIds().size }
+            }}
+          </span>
+        } @else {
+          <span></span>
+        }
+        <button
+          class="new-conversation-submit"
+          type="button"
+          [disabled]="isLoadingUsers() || isSubmitting()"
+          (click)="create()"
+        >
+          @if (isSubmitting()) {
+            {{ 'CHAT.NEW_CONVERSATION.CREATING' | translate }}
+          } @else if (mode() === 'private') {
+            {{ 'CHAT.NEW_CONVERSATION.START_PRIVATE' | translate }}
+          } @else {
+            {{ 'CHAT.NEW_CONVERSATION.CREATE_GROUP' | translate }}
+          }
+        </button>
+      </footer>
+    </section>
+  </div>
+}

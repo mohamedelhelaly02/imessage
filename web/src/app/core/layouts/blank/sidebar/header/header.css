@@ -1,0 +1,58 @@
+.imessage-sidebar-header {
+    padding: 20px 16px 14px;
+    border-bottom: 1px solid #edf0f5;
+}
+
+.imessage-sidebar-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.imessage-sidebar-title-row h2 {
+    font-size: 23px;
+    font-weight: 700;
+    color: #19283e;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.imessage-search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.imessage-search-icon {
+    position: absolute;
+    inset-inline-start: 11px;
+    width: 14px;
+    height: 14px;
+    color: #8e8e93;
+}
+
+.imessage-search-input {
+    width: 100%;
+    min-height: 38px;
+    padding: 8px 11px 8px 34px;
+    padding-inline-start: 34px;
+    border: 1px solid transparent;
+    background: #f1f4f8;
+    border-radius: 11px;
+    font-size: 13px;
+    color: #23334b;
+    outline: none;
+    font-family: inherit;
+    transition: background 0.15s ease;
+}
+
+.imessage-search-input:focus {
+    border-color: #bcd4ff;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(52, 120, 246, 0.08);
+}
+
+.imessage-search-input::placeholder {
+    color: #929db0;
+}

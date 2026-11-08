@@ -1,0 +1,11 @@
+<main class="main-chat">
+  <app-chat-header
+    [participants]="getTypingParticipants()"
+    [conversation]="selectedConversation()"
+  ></app-chat-header>
+  <app-chat-messages></app-chat-messages>
+  <app-chat-composer
+    (onTyping)="onUserTyping()"
+    (onMessageSend)="onMessageChanged($event)"
+  ></app-chat-composer>
+</main>

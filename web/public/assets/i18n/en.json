@@ -1,0 +1,270 @@
+{
+    "REGISTER": {
+        "TITLE": "Create a new account",
+        "SUBTITLE": "Join now and start chatting with your friends",
+        "DISPLAY_NAME": {
+            "LABEL": "Display name",
+            "PLACEHOLDER": "Example: Sarah Ahmed",
+            "ERROR_MAX_LENGTH": "Name must not exceed 100 characters"
+        },
+        "EMAIL": {
+            "LABEL": "Email",
+            "PLACEHOLDER": "example@email.com",
+            "ERROR_INVALID": "Please enter a valid email address"
+        },
+        "PASSWORD": {
+            "LABEL": "Password",
+            "PLACEHOLDER": "At least 8 characters",
+            "ERROR_PATTERN": "Password must be at least 8 characters and contain an uppercase letter, lowercase letter, number, and special character"
+        },
+        "CONFIRM_PASSWORD": {
+            "LABEL": "Confirm password",
+            "PLACEHOLDER": "Re-enter your password",
+            "ERROR_REQUIRED": "Password confirmation is required",
+            "ERROR_MISMATCH": "Passwords do not match"
+        },
+        "BUTTON": {
+            "LOADING": "Creating account...",
+            "SUBMIT": "Create account"
+        },
+        "FOOTER": {
+            "QUESTION": "Already have an account?",
+            "LOGIN": "Log in"
+        }
+    },
+    "LOGIN": {
+        "TITLE": "Login",
+        "SUBTITLE": "Enter your details to continue to your chats",
+        "EMAIL": {
+            "LABEL": "Email",
+            "PLACEHOLDER": "example@email.com",
+            "ERROR_INVALID": "Please enter a valid email address"
+        },
+        "PASSWORD": {
+            "LABEL": "Password",
+            "PLACEHOLDER": "••••••••",
+            "ERROR_REQUIRED": "Password is required"
+        },
+        "TWO_FACTOR": {
+            "TITLE": "Two-step verification",
+            "DESCRIPTION": "Enter your authenticator code to finish signing in.",
+            "LABEL": "Authenticator code",
+            "PLACEHOLDER": "6-digit code",
+            "ERROR": "Enter a valid 6-digit code.",
+            "USE_RECOVERY": "Use a recovery code instead",
+            "USE_AUTHENTICATOR": "Use an authenticator code instead"
+        },
+        "RECOVERY_CODE": {
+            "LABEL": "Recovery code",
+            "PLACEHOLDER": "Enter an unused recovery code",
+            "ERROR": "Enter a valid recovery code."
+        },
+        "BUTTON": {
+            "SUBMIT": "Sign In",
+            "VERIFY": "Verify and sign in",
+            "LOADING": "Signing in..."
+        },
+        "FOOTER": {
+            "QUESTION": "Don't have an account?",
+            "REGISTER": "Create a new account",
+            "FORGOT_PASSWORD": "Forgot password?"
+        }
+    },
+    "PASSWORD": {
+        "FORGOT": {
+            "TITLE": "Reset your password",
+            "DESCRIPTION": "Enter your account email and we’ll send a password reset link if an account exists.",
+            "SENT_TITLE": "Check your inbox",
+            "SENT_DESCRIPTION": "If an account with that email exists, a password reset link has been sent."
+        },
+        "RESET": {
+            "TITLE": "Choose a new password",
+            "DESCRIPTION": "Create a strong password to secure your account.",
+            "SUCCESS_TITLE": "Password updated",
+            "SUCCESS_DESCRIPTION": "Your password has been reset. You can now sign in with your new password.",
+            "INVALID_TITLE": "Invalid reset link",
+            "INVALID_DESCRIPTION": "This reset link is missing information. Request a new password reset email."
+        },
+        "FIELDS": {
+            "EMAIL": "Email address",
+            "NEW_PASSWORD": "New password",
+            "CONFIRM_PASSWORD": "Confirm new password"
+        },
+        "ERRORS": {
+            "EMAIL": "Enter a valid email address.",
+            "PASSWORD": "Use at least 8 characters with uppercase, lowercase, a number, and a symbol.",
+            "PASSWORD_MISMATCH": "Passwords do not match."
+        },
+        "BUTTONS": {
+            "SEND_LINK": "Send reset link",
+            "SENDING": "Sending...",
+            "RESET": "Reset password",
+            "SAVING": "Saving...",
+            "BACK_TO_LOGIN": "Back to login"
+        }
+    },
+    "PROFILE": {
+        "EYEBROW": "Account settings",
+        "TITLE": "Your profile",
+        "SUBTITLE": "Manage your personal details, security, and account.",
+        "LOADING": "Loading your profile...",
+        "SECTIONS": {
+            "DETAILS": "Profile details",
+            "PASSWORD": "Change password",
+            "TWO_FACTOR": "Two-factor authentication",
+            "DELETE_ACCOUNT": "Delete account"
+        },
+        "DETAILS_DESCRIPTION": "Update the details people see when they chat with you.",
+        "PASSWORD_DESCRIPTION": "Use a unique password you don't use anywhere else.",
+        "TWO_FACTOR_DESCRIPTION": "Add an authenticator app and recovery codes to protect your account.",
+        "DELETE_DESCRIPTION": "Deleting your account is permanent. Your account and profile will be removed, your messages and conversations you created will be deleted, and active refresh sessions will be revoked.",
+        "FIELDS": {
+            "DISPLAY_NAME": "Display name",
+            "USERNAME": "Username",
+            "EMAIL": "Email address",
+            "PICTURE_URL": "Profile picture URL (HTTPS)",
+            "CURRENT_PASSWORD": "Current password",
+            "NEW_PASSWORD": "New password",
+            "PASSWORD_FOR_CODES": "Confirm password to replace recovery codes",
+            "AUTHENTICATOR_CODE": "6-digit authenticator code"
+        },
+        "ERRORS": {
+            "DISPLAY_NAME": "Enter a display name up to 100 characters.",
+            "PASSWORD": "Use at least 8 characters with uppercase, lowercase, a number, and a symbol.",
+            "CODE": "Enter a valid 6-digit authenticator code."
+        },
+        "FEEDBACK": {
+            "PROFILE_SAVED": "Your profile has been updated.",
+            "PASSWORD_CHANGED": "Your password has been changed. Other sessions have been signed out.",
+            "TWO_FACTOR_DISABLED": "Two-factor authentication has been disabled."
+        },
+        "BUTTONS": {
+            "SAVE": "Save profile",
+            "SAVING": "Saving...",
+            "CHANGE_PASSWORD": "Update password",
+            "SETUP_TWO_FACTOR": "Set up authenticator app",
+            "VERIFY_AND_ENABLE": "Verify and enable",
+            "DISABLE_TWO_FACTOR": "Disable two-factor authentication",
+            "REGENERATE_CODES": "Replace recovery codes",
+            "DONE_SAVING_CODES": "I've saved these codes",
+            "DELETE_ACCOUNT": "Permanently delete account"
+        },
+        "TWO_FACTOR_ENABLED": "Authenticator protection is enabled",
+        "RECOVERY_CODES_LEFT": "{{count}} recovery codes remaining",
+        "RECOVERY_CODES_TITLE": "Save your recovery codes",
+        "RECOVERY_CODES_WARNING": "Each code can be used once. These codes are shown only now; store them somewhere safe.",
+        "AUTHENTICATOR": {
+            "INSTRUCTIONS": "Add iMessage to your authenticator app by opening the app link or entering the key manually.",
+            "OPEN_APP": "Open in authenticator app",
+            "MANUAL_KEY": "Or enter this setup key:"
+        },
+        "DELETE_CONFIRMATION": "I understand this action is permanent and will remove my account."
+    },
+    "CONFIRM_EMAIL": {
+        "VERIFYING": {
+            "TITLE": "Confirming your email",
+            "DESCRIPTION": "Please wait while we verify your email address."
+        },
+        "SUCCESS": {
+            "TITLE": "Email confirmed",
+            "DESCRIPTION": "Your email address has been verified. You can now sign in to your account."
+        },
+        "ERROR": {
+            "TITLE": "Confirmation failed",
+            "DESCRIPTION": "We couldn't confirm this email address. The link may be invalid or expired."
+        },
+        "INVALID": {
+            "TITLE": "Invalid confirmation link",
+            "DESCRIPTION": "This link is missing the information needed to confirm your email. Please request a new confirmation email."
+        },
+        "BUTTON": {
+            "LOGIN": "Continue to login"
+        }
+    },
+    "AUTH_NAVBAR": {
+        "BRAND": "Messages"
+    },
+    "AUTH_LANDING": {
+        "EYEBROW": "A little closer, every day",
+        "TITLE": "Your conversations, all in one place.",
+        "DESCRIPTION": "A simple, welcoming space to catch up with friends, share a moment, and keep the conversation going.",
+        "FEATURE_ONE": "Pick up where your conversations left off",
+        "FEATURE_TWO": "See who's around and ready to chat",
+        "FEATURE_THREE": "Keep every conversation together"
+    },
+    "NAVBAR": {
+        "BRAND": "Messages",
+        "PROFILE": "Profile",
+        "LOGOUT": "Log out"
+    },
+    "CHAT": {
+        "SIDEBAR_HEADER": {
+            "TITLE": "Messages",
+            "NEW_CHAT": "New chat"
+        },
+        "NEW_CONVERSATION": {
+            "EYEBROW": "Start something new",
+            "TITLE": "New conversation",
+            "CLOSE": "Close",
+            "PRIVATE": "Private chat",
+            "GROUP": "Group chat",
+            "GROUP_NAME": "Group name",
+            "GROUP_NAME_PLACEHOLDER": "Give your group a name",
+            "CHOOSE_PERSON": "Choose someone to chat with",
+            "ADD_PEOPLE": "Add people to your group",
+            "SEARCH_PEOPLE": "Search people",
+            "LOADING": "Loading people...",
+            "NO_PEOPLE": "No people found",
+            "SELECTED_COUNT": "{{count}} selected",
+            "START_PRIVATE": "Start chat",
+            "CREATE_GROUP": "Create group",
+            "CREATING": "Creating...",
+            "ERROR": {
+                "SELECT_PERSON": "Choose someone to start a private chat.",
+                "GROUP_TITLE": "Enter a name for your group.",
+                "SELECT_GROUP_MEMBER": "Choose at least one person for your group.",
+                "GENERIC": "Unable to complete this action. Please try again."
+            }
+        },
+        "EMPTY": {
+            "TITLE": "No Conversation Selected",
+            "CHOOSE": "Choose a conversation or start a new chat to begin messaging."
+        },
+        "LIST": {
+            "TYPING": "typing",
+            "LAST_ACTIVE": "Last active",
+            "START_NOW": "Start the conversation now",
+            "LAST_MESSAGE_SENT": "Last message sent"
+        },
+        "HEADER": {
+            "TYPING": "typing",
+            "GROUP_TYPING": "{{count}} people are typing",
+            "GROUP_SUBTITLE": "{{names}}",
+            "GROUP_SUBTITLE_MORE": "{{names}} and {{count}} others",
+            "ONLINE": "online",
+            "OFFLINE": "offline",
+            "LAST_SEEN": "Last seen",
+            "VOICE_CALL": "Voice call",
+            "VIDEO_CALL": "Video call",
+            "INFO": "Info"
+        },
+        "COMPOSER": {
+            "APPS": "Apps",
+            "AUDIO_MESSAGE": "Audio Message",
+            "SEND": "Send",
+            "PLACEHOLDER": "Write a message..."
+        }
+    },
+    "COMMON": {
+        "LANGUAGE": "Language",
+        "FOOTER": {
+            "COPYRIGHT": "Crafted by Me \u2022 \u00a9 {{year}} All rights reserved."
+        },
+        "SEARCH": {
+            "PLACEHOLDER": "Search"
+        }
+    },
+    "NOT_FOUND": {
+        "TITLE": "Page not found"
+    }
+}

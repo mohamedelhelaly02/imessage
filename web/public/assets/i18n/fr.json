@@ -1,0 +1,270 @@
+{
+    "REGISTER": {
+        "TITLE": "Créer un nouveau compte",
+        "SUBTITLE": "Rejoignez-nous et commencez à discuter avec vos amis",
+        "DISPLAY_NAME": {
+            "LABEL": "Nom affiché",
+            "PLACEHOLDER": "Exemple : Sarah Ahmed",
+            "ERROR_MAX_LENGTH": "Le nom ne doit pas dépasser 100 caractères"
+        },
+        "EMAIL": {
+            "LABEL": "E-mail",
+            "PLACEHOLDER": "example@email.com",
+            "ERROR_INVALID": "Veuillez entrer une adresse e-mail valide"
+        },
+        "PASSWORD": {
+            "LABEL": "Mot de passe",
+            "PLACEHOLDER": "Au moins 8 caractères",
+            "ERROR_PATTERN": "Le mot de passe doit contenir au moins 8 caractères et inclure une lettre majuscule, une lettre minuscule, un chiffre et un caractère spécial"
+        },
+        "CONFIRM_PASSWORD": {
+            "LABEL": "Confirmer le mot de passe",
+            "PLACEHOLDER": "Saisissez à nouveau votre mot de passe",
+            "ERROR_REQUIRED": "La confirmation du mot de passe est obligatoire",
+            "ERROR_MISMATCH": "Les mots de passe ne correspondent pas"
+        },
+        "BUTTON": {
+            "LOADING": "Création du compte...",
+            "SUBMIT": "Créer un compte"
+        },
+        "FOOTER": {
+            "QUESTION": "Vous avez déjà un compte ?",
+            "LOGIN": "Se connecter"
+        }
+    },
+    "LOGIN": {
+        "TITLE": "Connexion",
+        "SUBTITLE": "Saisissez vos informations pour accéder à vos discussions",
+        "EMAIL": {
+            "LABEL": "E-mail",
+            "PLACEHOLDER": "example@email.com",
+            "ERROR_INVALID": "Veuillez entrer une adresse e-mail valide"
+        },
+        "PASSWORD": {
+            "LABEL": "Mot de passe",
+            "PLACEHOLDER": "••••••••",
+            "ERROR_REQUIRED": "Le mot de passe est requis"
+        },
+        "TWO_FACTOR": {
+            "TITLE": "Vérification en deux étapes",
+            "DESCRIPTION": "Saisissez le code de votre application pour vous connecter.",
+            "LABEL": "Code d’authentification",
+            "PLACEHOLDER": "Code à 6 chiffres",
+            "ERROR": "Saisissez un code valide à 6 chiffres.",
+            "USE_RECOVERY": "Utiliser un code de récupération",
+            "USE_AUTHENTICATOR": "Utiliser un code d’authentification"
+        },
+        "RECOVERY_CODE": {
+            "LABEL": "Code de récupération",
+            "PLACEHOLDER": "Saisissez un code non utilisé",
+            "ERROR": "Saisissez un code de récupération valide."
+        },
+        "BUTTON": {
+            "SUBMIT": "Se connecter",
+            "VERIFY": "Vérifier et se connecter",
+            "LOADING": "Connexion en cours..."
+        },
+        "FOOTER": {
+            "QUESTION": "Vous n'avez pas de compte ?",
+            "REGISTER": "Créer un nouveau compte",
+            "FORGOT_PASSWORD": "Mot de passe oublié ?"
+        }
+    },
+    "PASSWORD": {
+        "FORGOT": {
+            "TITLE": "Réinitialiser votre mot de passe",
+            "DESCRIPTION": "Saisissez l’e-mail de votre compte pour recevoir un lien de réinitialisation si le compte existe.",
+            "SENT_TITLE": "Consultez votre boîte de réception",
+            "SENT_DESCRIPTION": "Si un compte correspond à cette adresse, un lien de réinitialisation a été envoyé."
+        },
+        "RESET": {
+            "TITLE": "Choisissez un nouveau mot de passe",
+            "DESCRIPTION": "Créez un mot de passe robuste pour protéger votre compte.",
+            "SUCCESS_TITLE": "Mot de passe mis à jour",
+            "SUCCESS_DESCRIPTION": "Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.",
+            "INVALID_TITLE": "Lien de réinitialisation invalide",
+            "INVALID_DESCRIPTION": "Ce lien ne contient pas les informations nécessaires. Demandez un nouvel e-mail de réinitialisation."
+        },
+        "FIELDS": {
+            "EMAIL": "Adresse e-mail",
+            "NEW_PASSWORD": "Nouveau mot de passe",
+            "CONFIRM_PASSWORD": "Confirmer le nouveau mot de passe"
+        },
+        "ERRORS": {
+            "EMAIL": "Saisissez une adresse e-mail valide.",
+            "PASSWORD": "Utilisez au moins 8 caractères avec majuscule, minuscule, chiffre et symbole.",
+            "PASSWORD_MISMATCH": "Les mots de passe ne correspondent pas."
+        },
+        "BUTTONS": {
+            "SEND_LINK": "Envoyer le lien",
+            "SENDING": "Envoi en cours...",
+            "RESET": "Réinitialiser le mot de passe",
+            "SAVING": "Enregistrement...",
+            "BACK_TO_LOGIN": "Retour à la connexion"
+        }
+    },
+    "PROFILE": {
+        "EYEBROW": "Paramètres du compte",
+        "TITLE": "Votre profil",
+        "SUBTITLE": "Gérez vos informations, votre sécurité et votre compte.",
+        "LOADING": "Chargement de votre profil...",
+        "SECTIONS": {
+            "DETAILS": "Détails du profil",
+            "PASSWORD": "Changer le mot de passe",
+            "TWO_FACTOR": "Authentification à deux facteurs",
+            "DELETE_ACCOUNT": "Supprimer le compte"
+        },
+        "DETAILS_DESCRIPTION": "Modifiez les informations visibles par vos contacts.",
+        "PASSWORD_DESCRIPTION": "Utilisez un mot de passe unique.",
+        "TWO_FACTOR_DESCRIPTION": "Protégez votre compte avec une application d’authentification et des codes de récupération.",
+        "DELETE_DESCRIPTION": "La suppression est définitive. Votre compte et votre profil seront supprimés, ainsi que les conversations créées. Les sessions de renouvellement seront révoquées.",
+        "FIELDS": {
+            "DISPLAY_NAME": "Nom affiché",
+            "USERNAME": "Nom d’utilisateur",
+            "EMAIL": "Adresse e-mail",
+            "PICTURE_URL": "URL de la photo de profil (HTTPS)",
+            "CURRENT_PASSWORD": "Mot de passe actuel",
+            "NEW_PASSWORD": "Nouveau mot de passe",
+            "PASSWORD_FOR_CODES": "Confirmez votre mot de passe pour renouveler les codes",
+            "AUTHENTICATOR_CODE": "Code d’authentification à 6 chiffres"
+        },
+        "ERRORS": {
+            "DISPLAY_NAME": "Saisissez un nom de 100 caractères maximum.",
+            "PASSWORD": "Utilisez au moins 8 caractères avec majuscule, minuscule, chiffre et symbole.",
+            "CODE": "Saisissez un code d’authentification valide à 6 chiffres."
+        },
+        "FEEDBACK": {
+            "PROFILE_SAVED": "Votre profil a été mis à jour.",
+            "PASSWORD_CHANGED": "Votre mot de passe a été modifié. Les autres sessions ont été déconnectées.",
+            "TWO_FACTOR_DISABLED": "L’authentification à deux facteurs a été désactivée."
+        },
+        "BUTTONS": {
+            "SAVE": "Enregistrer le profil",
+            "SAVING": "Enregistrement...",
+            "CHANGE_PASSWORD": "Mettre à jour le mot de passe",
+            "SETUP_TWO_FACTOR": "Configurer l’application",
+            "VERIFY_AND_ENABLE": "Vérifier et activer",
+            "DISABLE_TWO_FACTOR": "Désactiver l’authentification à deux facteurs",
+            "REGENERATE_CODES": "Renouveler les codes",
+            "DONE_SAVING_CODES": "J’ai enregistré ces codes",
+            "DELETE_ACCOUNT": "Supprimer définitivement le compte"
+        },
+        "TWO_FACTOR_ENABLED": "La protection par authentificateur est activée",
+        "RECOVERY_CODES_LEFT": "{{count}} codes de récupération restants",
+        "RECOVERY_CODES_TITLE": "Enregistrez vos codes de récupération",
+        "RECOVERY_CODES_WARNING": "Chaque code est à usage unique. Ils ne seront affichés que maintenant ; conservez-les en lieu sûr.",
+        "AUTHENTICATOR": {
+            "INSTRUCTIONS": "Ajoutez iMessage à votre application en ouvrant le lien ou en saisissant manuellement la clé.",
+            "OPEN_APP": "Ouvrir dans l’application d’authentification",
+            "MANUAL_KEY": "Ou saisissez cette clé de configuration :"
+        },
+        "DELETE_CONFIRMATION": "Je comprends que cette action est définitive et supprimera mon compte."
+    },
+    "CONFIRM_EMAIL": {
+        "VERIFYING": {
+            "TITLE": "Confirmation de votre adresse e-mail",
+            "DESCRIPTION": "Veuillez patienter pendant la vérification de votre adresse e-mail."
+        },
+        "SUCCESS": {
+            "TITLE": "Adresse e-mail confirmée",
+            "DESCRIPTION": "Votre adresse e-mail a été vérifiée. Vous pouvez maintenant vous connecter."
+        },
+        "ERROR": {
+            "TITLE": "Échec de la confirmation",
+            "DESCRIPTION": "Nous n'avons pas pu confirmer cette adresse e-mail. Le lien est peut-être invalide ou expiré."
+        },
+        "INVALID": {
+            "TITLE": "Lien de confirmation invalide",
+            "DESCRIPTION": "Ce lien ne contient pas les informations nécessaires pour confirmer votre adresse e-mail. Veuillez demander un nouvel e-mail de confirmation."
+        },
+        "BUTTON": {
+            "LOGIN": "Continuer vers la connexion"
+        }
+    },
+    "AUTH_NAVBAR": {
+        "BRAND": "Messages"
+    },
+    "AUTH_LANDING": {
+        "EYEBROW": "Un peu plus proches, chaque jour",
+        "TITLE": "Toutes vos conversations au même endroit.",
+        "DESCRIPTION": "Un espace simple et accueillant pour retrouver vos amis, partager un moment et poursuivre la conversation.",
+        "FEATURE_ONE": "Reprenez vos conversations là où vous les avez laissées",
+        "FEATURE_TWO": "Voyez qui est disponible pour discuter",
+        "FEATURE_THREE": "Retrouvez toutes vos conversations au même endroit"
+    },
+    "NAVBAR": {
+        "BRAND": "Messages",
+        "PROFILE": "Profil",
+        "LOGOUT": "Se déconnecter"
+    },
+    "CHAT": {
+        "SIDEBAR_HEADER": {
+            "TITLE": "Messages",
+            "NEW_CHAT": "Nouvelle conversation"
+        },
+        "NEW_CONVERSATION": {
+            "EYEBROW": "Commencez quelque chose de nouveau",
+            "TITLE": "Nouvelle conversation",
+            "CLOSE": "Fermer",
+            "PRIVATE": "Discussion privée",
+            "GROUP": "Discussion de groupe",
+            "GROUP_NAME": "Nom du groupe",
+            "GROUP_NAME_PLACEHOLDER": "Donnez un nom à votre groupe",
+            "CHOOSE_PERSON": "Choisissez une personne",
+            "ADD_PEOPLE": "Ajoutez des personnes au groupe",
+            "SEARCH_PEOPLE": "Rechercher des personnes",
+            "LOADING": "Chargement des personnes...",
+            "NO_PEOPLE": "Aucune personne trouvée",
+            "SELECTED_COUNT": "{{count}} sélectionné(s)",
+            "START_PRIVATE": "Démarrer la discussion",
+            "CREATE_GROUP": "Créer le groupe",
+            "CREATING": "Création...",
+            "ERROR": {
+                "SELECT_PERSON": "Choisissez une personne pour démarrer une discussion privée.",
+                "GROUP_TITLE": "Saisissez un nom pour votre groupe.",
+                "SELECT_GROUP_MEMBER": "Choisissez au moins une personne pour votre groupe.",
+                "GENERIC": "Impossible de terminer cette action. Veuillez réessayer."
+            }
+        },
+        "EMPTY": {
+            "TITLE": "Aucune conversation sélectionnée",
+            "CHOOSE": "Choisissez une conversation ou démarrez une nouvelle discussion pour commencer à échanger."
+        },
+        "LIST": {
+            "TYPING": "écrit",
+            "LAST_ACTIVE": "Dernière activité",
+            "START_NOW": "Commencer la conversation maintenant",
+            "LAST_MESSAGE_SENT": "Dernier message envoyé"
+        },
+        "HEADER": {
+            "TYPING": "écrit",
+            "GROUP_TYPING": "{{count}} personnes sont en train d’écrire",
+            "GROUP_SUBTITLE": "{{names}}",
+            "GROUP_SUBTITLE_MORE": "{{names}} et {{count}} autres",
+            "ONLINE": "en ligne",
+            "OFFLINE": "hors ligne",
+            "LAST_SEEN": "Dernière connexion",
+            "VOICE_CALL": "Appel vocal",
+            "VIDEO_CALL": "Appel vidéo",
+            "INFO": "Info"
+        },
+        "COMPOSER": {
+            "APPS": "Applications",
+            "AUDIO_MESSAGE": "Message audio",
+            "SEND": "Envoyer",
+            "PLACEHOLDER": "Écrire un message..."
+        }
+    },
+    "COMMON": {
+        "LANGUAGE": "Langue",
+        "FOOTER": {
+            "COPYRIGHT": "Conçu par Me \u2022 \u00a9 {{year}} Tous droits réservés."
+        },
+        "SEARCH": {
+            "PLACEHOLDER": "Rechercher"
+        }
+    },
+    "NOT_FOUND": {
+        "TITLE": "Page introuvable"
+    }
+}

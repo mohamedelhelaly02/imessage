@@ -1,0 +1,30 @@
+# Build results
+bin/
+obj/
+out/
+publish/
+artifacts/
+TestResults/
+*.user
+*.suo
+*.cache
+*.pdb
+*.dll
+*.exe
+*.nupkg
+*.snupkg
+
+# ASP.NET Core and local secrets
+appsettings.*.local.json
+secrets.json
+**/secrets.json
+**/logs/
+*.log
+
+# IDE and OS files
+.vs/
+.idea/
+.vscode/
+*.sln.docstates
+.DS_Store
+Thumbs.db

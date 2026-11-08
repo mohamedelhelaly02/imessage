@@ -1,0 +1,65 @@
+<footer class="imessage-footer-container">
+  <div class="imessage-lang-wrapper">
+    <button
+      type="button"
+      (click)="toggleOpen($event)"
+      class="imessage-lang-trigger"
+      [attr.aria-expanded]="isOpen()"
+    >
+      <span class="imessage-lang-flag" [ngClass]="selectedLanguage().flagClass"></span>
+      <span class="imessage-lang-code">{{ selectedLanguage().code | uppercase }}</span>
+      <svg
+        class="imessage-lang-chevron"
+        [class.rotate]="isOpen()"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2.5"
+          d="M19 9l-7 7-7-7"
+        />
+      </svg>
+    </button>
+
+    @if (isOpen()) {
+      <div class="imessage-lang-menu">
+        <div class="imessage-lang-header">{{ 'COMMON.LANGUAGE' | translate }}</div>
+        @for (lang of languages(); track lang.code) {
+          <button
+            type="button"
+            (click)="selectLanguage(lang)"
+            class="imessage-lang-option"
+            [class.selected]="lang.code === selectedLanguage().code"
+          >
+            <div class="imessage-lang-option-content">
+              <span class="imessage-lang-flag" [ngClass]="lang.flagClass"></span>
+              <span class="imessage-lang-name">{{ lang.name }}</span>
+            </div>
+            @if (lang.code === selectedLanguage().code) {
+              <svg
+                class="imessage-lang-check"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            }
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="imessage-copyright">
+    <span>{{ 'COMMON.FOOTER.COPYRIGHT' | translate: { year: currentYear() } }}</span>
+  </div>
+</footer>

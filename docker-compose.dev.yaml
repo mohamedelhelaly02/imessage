@@ -1,0 +1,57 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:?Set SA_PASSWORD in .env}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql-data-dev:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$SA_PASSWORD\" -C -Q \"SELECT 1\" -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  api:
+    build:
+      context: ./Api
+      target: development
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Server=db;Database=iMessage;User Id=sa;Password=${SA_PASSWORD:?Set SA_PASSWORD in .env};TrustServerCertificate=True"
+      JwtSettings__Secret: ${JWT_SECRET:?Set JWT_SECRET in .env}
+      JwtSettings__Issuer: ${JWT_ISSUER:-iMessage}
+      JwtSettings__Audience: ${JWT_AUDIENCE:-iMessage-web}
+      AngularClient: http://localhost:4200
+      ASPNETCORE_URLS: http://+:8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./Api:/src
+      - api-bin:/src/bin
+      - api-obj:/src/obj
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./web
+      target: development
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./web:/app
+      - web-node-modules:/app/node_modules
+    depends_on:
+      - api
+
+volumes:
+  sql-data-dev:
+  api-bin:
+  api-obj:
+  web-node-modules:

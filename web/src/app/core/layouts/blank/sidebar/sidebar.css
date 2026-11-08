@@ -1,0 +1,23 @@
+.imessage-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: clamp(280px, 29vw, 360px);
+    height: 100%;
+    background: #fbfcfe;
+    border-inline-end: 1px solid #e7ebf2;
+    user-select: none;
+    box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+    .imessage-sidebar {
+        width: 288px;
+    }
+}
+
+@media (max-width: 760px) {
+    .imessage-sidebar {
+        width: 100%;
+        border-inline-end: 0;
+    }
+}
