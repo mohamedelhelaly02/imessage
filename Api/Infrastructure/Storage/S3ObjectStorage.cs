@@ -1,13 +1,13 @@
-using System.Net;
 using Amazon.S3;
 using Amazon.S3.Model;
 using Api.Application.Interfaces;
+using System.Net;
 
 namespace Api.Infrastructure.Storage;
 
 public sealed class S3ObjectStorage(IAmazonS3 amazonS3) : IObjectStorage
 {
-    public Task<string> CreateDownloadUrlAsync(string bucket, string objectKey, int expirationMinutes)
+    public async Task<string> CreateDownloadUrlAsync(string bucket, string objectKey, int expirationMinutes)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(bucket);
         ArgumentException.ThrowIfNullOrWhiteSpace(objectKey);
@@ -22,7 +22,7 @@ public sealed class S3ObjectStorage(IAmazonS3 amazonS3) : IObjectStorage
             Verb = HttpVerb.GET
         };
 
-        return Task.FromResult(amazonS3.GetPreSignedURL(request));
+        return await amazonS3.GetPreSignedURLAsync(request);
     }
 
     public async Task<long?> GetObjectSizeAsync(string bucket, string objectKey, CancellationToken cancellationToken = default)
