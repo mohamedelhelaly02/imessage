@@ -1,4 +1,21 @@
 services:
+  rustfs:
+    image: rustfs/rustfs:1.0.3
+    container_name: imessage-rustfs
+    environment:
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_VOLUMES: "/data"
+      RUSTFS_ACCESS_KEY: ${OBJECT_STORAGE_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${OBJECT_STORAGE_SECRET_KEY}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - rustfs-data:/data
+    restart: unless-stopped
+
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: imessage-db
@@ -34,6 +51,14 @@ services:
       JwtSettings__Audience: ${JWT_AUDIENCE}
       JwtSettings__ExpirationInMinutes: 5
       JwtSettings__RefreshTokenExpirationInDays: 7
+
+      ObjectStorage__Endpoint: ${OBJECT_STORAGE_ENDPOINT}
+      ObjectStorage__AttachmentsBucket: ${OBJECT_STORAGE_ATTACHMENTS_BUCKET}
+      ObjectStorage__Region: ${OBJECT_STORAGE_REGION}
+      ObjectStorage__MaxFileSizeBytes: ${OBJECT_STORAGE_MAX_FILE_SIZE_BYTES}
+      ObjectStorage__DownloadUrlExpirationMinutes: ${OBJECT_STORAGE_DOWNLOAD_URL_EXPIRATION_MINUTES}
+
+
       EmailSettings__Username: ${EMAIL_USERNAME}
       EmailSettings__Server: ${EMAIL_SERVER}
       EmailSettings__Port: 587
@@ -53,6 +78,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      rustfs:
+        condition: service_started
 
   web:
     build:
@@ -70,3 +97,4 @@ services:
 
 volumes:
   sql-data:
+  rustfs-data:

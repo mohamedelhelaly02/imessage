@@ -12,6 +12,11 @@ public sealed class AppDbContext(
     public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
     public DbSet<Conversation> Conversations { get; set; } = null!;
     public DbSet<Participant> Participants { get; set; } = null!;
+    public DbSet<Message> Messages { get; set; } = null!;
+    public DbSet<MessageAttachment> MessageAttachments { get; set; } = null!;
+    public DbSet<MessageReceipt> MessageReceipts { get; set; } = null!;
+    public DbSet<MessageReaction> MessageReactions { get; set; } = null!;
+    public DbSet<PendingObjectUpload> PendingObjectUploads { get; set; } = null!;
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

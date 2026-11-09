@@ -13,4 +13,5 @@ public sealed class Conversation : Entity
     public string CreatedById { get; set; } = null!;
     public User CreatedBy { get; set; } = null!;
     public HashSet<Participant> Participants { get; set; } = [];
+    public ICollection<Message> Messages { get; set; } = [];
 }

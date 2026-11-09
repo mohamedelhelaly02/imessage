@@ -15,6 +15,7 @@ public sealed record Error
     }
 
     public static Error Unauthorized(string code = "UNAUTHORIZED", string message = "Unauthorized access.") => new(code, message, ErrorType.Unauthorized);
+    public static Error Forbidden(string code = "FORBIDDEN", string message = "You are not allowed to perform this operation.") => new(code, message, ErrorType.Forbidden);
     public static Error NotFound(string code = "NOT_FOUND", string message = "Resource not found.") => new(code, message, ErrorType.NotFound);
     public static Error Conflict(string code = "CONFLICT", string message = "Conflict occurred.") => new(code, message, ErrorType.Conflict);
     public static Error Validation(

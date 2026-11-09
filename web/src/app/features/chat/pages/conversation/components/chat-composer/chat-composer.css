@@ -9,7 +9,11 @@
     user-select: none;
     width: 100%;
     box-sizing: border-box;
+    flex-wrap: wrap;
 }
+
+.reply-composer { flex-basis:100%; display:flex; justify-content:space-between; color:#4e5d73; font-size:12px; padding-inline-start:46px; }
+.reply-composer button { border:0; background:transparent; cursor:pointer; }
 
 .composer-action-btn,
 .composer-audio-btn,
@@ -90,6 +94,9 @@
 .composer-audio-btn:hover {
     color: #1c1c1e;
 }
+
+.composer-audio-btn.recording { color:#e34b55; animation:pulse-recording 1s infinite; }
+@keyframes pulse-recording { 50% { opacity:.45; } }
 
 .composer-audio-btn svg {
     width: 16px;

@@ -5,12 +5,31 @@ import { environment } from '../../../environments/environment';
 import { AuthStore } from '../../features/auth/services/store';
 import { ConversationStore } from '../../features/chat/services/store';
 import { toast } from 'ngx-sonner';
+import { Observable, Subject } from 'rxjs';
+import { IMessage } from '../../features/chat/services/messages-api';
 @Service()
 export class SignalrService {
   private _hubConnection!: HubConnection;
   private readonly _hubUrl = `${environment.apiUrl}/hubs/chat`;
   private readonly _authStore = inject(AuthStore);
   private readonly _conversationStore = inject(ConversationStore);
+  private readonly _messageCreated = new Subject<IMessage>();
+  private readonly _messageEdited = new Subject<IMessage>();
+  private readonly _messageDeleted = new Subject<{ id: string; conversationId: string; deletedAtUtc: string }>();
+  private readonly _messageReceiptsUpdated = new Subject<{
+    userId: string; messageIds: string[]; deliveredAtUtc: string; readAtUtc: string;
+  }>();
+  private readonly _messageReactionChanged = new Subject<{
+    messageId: string; userId: string; displayName: string; emoji: string; isRemoved: boolean;
+  }>();
+  private readonly _messagePinChanged = new Subject<{ id: string; isPinned: boolean }>();
+
+  readonly messageCreated$: Observable<IMessage> = this._messageCreated.asObservable();
+  readonly messageEdited$: Observable<IMessage> = this._messageEdited.asObservable();
+  readonly messageDeleted$ = this._messageDeleted.asObservable();
+  readonly messageReceiptsUpdated$ = this._messageReceiptsUpdated.asObservable();
+  readonly messageReactionChanged$ = this._messageReactionChanged.asObservable();
+  readonly messagePinChanged$ = this._messagePinChanged.asObservable();
 
   async startConnection(): Promise<void> {
     if (
@@ -138,5 +157,12 @@ export class SignalrService {
     this._hubConnection.on('UserStoppedTyping', (conversationId, userId) => {
       this._authStore.userStopedTyping(conversationId, userId);
     });
+
+    this._hubConnection.on('MessageCreated', (event: IMessage) => this._messageCreated.next(event));
+    this._hubConnection.on('MessageEdited', (event: IMessage) => this._messageEdited.next(event));
+    this._hubConnection.on('MessageDeleted', event => this._messageDeleted.next(event));
+    this._hubConnection.on('MessageReceiptsUpdated', event => this._messageReceiptsUpdated.next(event));
+    this._hubConnection.on('MessageReactionChanged', event => this._messageReactionChanged.next(event));
+    this._hubConnection.on('MessagePinChanged', event => this._messagePinChanged.next(event));
   }
 }

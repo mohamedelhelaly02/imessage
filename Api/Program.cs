@@ -1,3 +1,5 @@
+using Amazon.Runtime;
+using Amazon.S3;
 using Api.Application.Behaviors;
 using Api.Application.Hubs;
 using Api.Application.Interfaces;
@@ -5,27 +7,36 @@ using Api.Domain.Entities;
 using Api.Infrastructure;
 using Api.Infrastructure.External;
 using Api.Infrastructure.Identity;
+using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence;
 using Api.Infrastructure.Persistence.Seed;
+using Api.Infrastructure.Storage;
 using Api.Shared;
 using Api.Shared.Extensions;
 using Api.Shared.Helpers;
+using Api.Shared.OpenApi;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json.Serialization;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<JwtBearerSecuritySchemeTransformer>();
+    options.AddOperationTransformer<JwtBearerSecurityRequirementTransformer>();
+});
+
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("Default"), c => c.EnableRetryOnFailure()));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
@@ -136,6 +147,46 @@ builder.Services.AddSignalR();
 
 builder.Services.AddSingleton<IConnectionTracker, ConnectionTracker>();
 
+builder.Services
+    .AddOptions<ObjectStorageSettings>()
+    .Bind(builder.Configuration.GetSection(ObjectStorageSettings.SectionName))
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.Endpoint),
+        "Object Storage Endpoint is required.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.AccessKey),
+        "Object Storage AccessKey is required.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.SecretKey),
+        "Object Storage SecretKey is required.")
+    .Validate(
+        options => !string.IsNullOrWhiteSpace(options.AttachmentsBucket),
+        "Attachments Bucket is required.")
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<ObjectStorageSettings>>()
+        .Value;
+
+    var credentials = new BasicAWSCredentials(
+        options.AccessKey,
+        options.SecretKey);
+
+    var config = new AmazonS3Config
+    {
+        ServiceURL = options.Endpoint,
+        ForcePathStyle = true,
+        AuthenticationRegion = options.Region
+    };
+
+    return new AmazonS3Client(credentials, config);
+});
+
+builder.Services.AddScoped<IObjectStorage, S3ObjectStorage>();
+
+builder.Services.AddScoped<IMessageNotifier, SignalRMessageNotifier>();
+
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(EmailSettings.SectionName));
 
 builder.Services.AddTransient<IEmailService, EmailService>();
@@ -148,6 +199,7 @@ await DbInitializer.SeedAsync(app.Services);
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options => options.SwaggerEndpoint("/openapi/v1.json", "Api v1"));
 }
 
 app.UseExceptionHandler();

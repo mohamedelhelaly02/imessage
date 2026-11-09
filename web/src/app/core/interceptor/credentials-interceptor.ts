@@ -1,6 +1,7 @@
 import { HttpErrorResponse, HttpInterceptorFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthStore } from '../../features/auth/services/store';
+import { SKIP_API_AUTH } from './request-context';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 
 let isRefreshing = false;
@@ -8,6 +9,10 @@ const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 const PUBLIC_ENDPOINTS = ['/auth/login', '/auth/register', '/auth/refresh'];
 
 export const credentialsInterceptor: HttpInterceptorFn = (req, next) => {
+  if (req.context.get(SKIP_API_AUTH)) {
+    return next(req);
+  }
+
   const authStore = inject(AuthStore);
   const isPublic = PUBLIC_ENDPOINTS.some((endpoint) => req.url.includes(endpoint));
 

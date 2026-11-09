@@ -3,9 +3,37 @@
     [participants]="getTypingParticipants()"
     [conversation]="selectedConversation()"
   ></app-chat-header>
-  <app-chat-messages></app-chat-messages>
+  <div class="message-toolbar">
+    <input #searchInput type="search" placeholder="Search messages" (keydown.enter)="search(searchInput.value)" />
+    <button type="button" (click)="search(searchInput.value)">Search</button>
+    @if (hasOlderMessages()) { <button type="button" (click)="loadOlderMessages()">Load older</button> }
+  </div>
+  @if (searchResults().length) {
+    <div class="search-results">
+      @for (result of searchResults(); track result.id) { <button type="button" (click)="jumpToMessage(result.id)">{{ result.senderDisplayName }}: {{ result.text }}</button> }
+    </div>
+  }
+  @if (error(); as message) { <p class="chat-error" role="alert">{{ message }}</p> }
+  <app-chat-messages
+    [messages]="messages()"
+    [currentUserId]="currentUserId()"
+    (onReact)="react($event)"
+    (onEdit)="editMessage($event)"
+    (onReply)="setReply($event)"
+    (onDelete)="deleteMessage($event)"
+    (onForward)="forwardMessage($event)"
+    (onPin)="setMessagePin($event)"
+  ></app-chat-messages>
   <app-chat-composer
+    [replyTo]="replyingTo()"
+    [disabled]="isSending()"
+    (onClearReply)="clearReply()"
     (onTyping)="onUserTyping()"
     (onMessageSend)="onMessageChanged($event)"
+    (onFileSelected)="onFileSelected($event)"
+    (onVoiceMessage)="onVoiceMessage($event)"
+    (onLocationShare)="onLocationShare($event)"
+    (onContactShare)="onContactShare($event)"
+    (onStickerSelected)="onStickerSelected($event)"
   ></app-chat-composer>
 </main>

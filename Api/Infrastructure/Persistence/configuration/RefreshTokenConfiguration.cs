@@ -2,7 +2,7 @@ using Api.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Api.Infrastructure.Persistence.configuration;
+namespace Api.Infrastructure.Persistence.Configuration;
 
 internal sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 {

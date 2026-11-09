@@ -1,5 +1,3 @@
-using System.Buffers.Text;
-using System.Text;
 using Api.Application.Interfaces;
 using Api.Domain.Entities;
 using Api.Shared.Abstraction;
@@ -8,6 +6,9 @@ using Api.Shared.Helpers;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using System.Buffers.Text;
+using System.Text;
 
 namespace Api.Application.Features.Auth;
 
@@ -111,7 +112,7 @@ public sealed class Register : IEndpoint
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapPost("auth/register", async (Command command, ISender sender) =>
+        app.MapPost("auth/register", async ([FromBody] Command command, ISender sender) =>
         {
             Result<string> result = await sender.Send(command);
             return result.ToResponse();

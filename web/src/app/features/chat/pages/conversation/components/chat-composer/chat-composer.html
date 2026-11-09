@@ -1,46 +1,32 @@
 <div class="imessage-composer">
-  <button
-    class="composer-action-btn"
-    type="button"
-    [attr.aria-label]="'CHAT.COMPOSER.APPS' | translate"
-  >
+  @if (replyTo(); as reply) { <div class="reply-composer"><span>Replying to {{ reply.senderDisplayName }} · {{ reply.text || reply.type }}</span><button type="button" (click)="onClearReply.emit()">×</button></div> }
+  <input #fileInput type="file" hidden (change)="onFileChange($event)" />
+  <input #stickerInput type="file" accept="image/*" hidden (change)="onStickerChange($event)" />
+  <button class="composer-action-btn" type="button" aria-label="Attach a file" [disabled]="disabled()" (click)="fileInput.click()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <line x1="12" y1="5" x2="12" y2="19"></line>
-      <line x1="5" y1="12" x2="19" y2="12"></line>
+      <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
     </svg>
   </button>
-
+  <button class="composer-action-btn" type="button" aria-label="Share contact" [disabled]="disabled()" (click)="shareContact()">👤</button>
+  <button class="composer-action-btn" type="button" aria-label="Send sticker" [disabled]="disabled()" (click)="stickerInput.click()">◇</button>
+  <button class="composer-action-btn" type="button" aria-label="Share location" [disabled]="disabled()" (click)="shareLocation()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle>
+    </svg>
+  </button>
   <div class="composer-input-wrapper">
-    <input
-      class="composer-textarea"
-      [placeholder]="'CHAT.COMPOSER.PLACEHOLDER' | translate"
-      [value]="message()"
-      (input)="onMessageInput($event)"
-    />
-
-    <button
-      class="composer-audio-btn"
-      type="button"
-      [attr.aria-label]="'CHAT.COMPOSER.AUDIO_MESSAGE' | translate"
-    >
+    <textarea class="composer-textarea" rows="1" placeholder="Message" [disabled]="disabled()"
+      [value]="message()" (input)="onMessageInput($event)" (keydown.enter)="$event.preventDefault(); sendMessage()"></textarea>
+    <button class="composer-audio-btn" type="button" [disabled]="disabled()" [class.recording]="isRecording()"
+      [attr.aria-label]="isRecording() ? 'Stop voice recording' : 'Record voice message'" (click)="toggleRecording()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path>
-        <line x1="12" y1="19" x2="12" y2="23"></line>
-        <line x1="8" y1="23" x2="16" y2="23"></line>
+        <path d="M19 10v1a7 7 0 0 1-14 0v-1"></path><line x1="12" y1="19" x2="12" y2="23"></line>
       </svg>
     </button>
   </div>
-
-  <button
-    class="composer-send-btn"
-    type="button"
-    [class.active]="message().trim().length > 0"
-    (click)="sendMessage()"
-    [attr.aria-label]="'CHAT.COMPOSER.SEND' | translate"
-  >
-    <svg viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 4l-8 8h5v8h6v-8h5z" />
-    </svg>
+  <button class="composer-send-btn" type="button" [disabled]="disabled()" [class.active]="message().trim().length > 0"
+    (click)="sendMessage()" aria-label="Send message">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5 22 12 3 3.5v6.6l13.5 1.9L3 13.9z" /></svg>
   </button>
 </div>
