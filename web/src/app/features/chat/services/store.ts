@@ -8,21 +8,13 @@ import {
   IMessage,
   ISearchMessageResponse,
   ISendMessageRequest,
+  IToggleReactionResponse,
   MessagesApi,
   MessageType,
 } from './messages-api';
 
 @Service()
 export class ConversationStore {
-  updateMessages(event: { id: string; conversationId: string; deletedAtUtc: string }) {
-    this._messages.update((items) =>
-      items.map((item) =>
-        item.id === event.id
-          ? { ...item, text: null, contentJson: null, deletedAtUtc: event.deletedAtUtc }
-          : item,
-      ),
-    );
-  }
   private readonly _conversationApi = inject(ConversationApi);
   private readonly _messagesApi = inject(MessagesApi);
   private readonly _router = inject(Router);
@@ -44,6 +36,80 @@ export class ConversationStore {
   readonly messages = this._messages.asReadonly();
   readonly replyingToMessage = this._replyingTo.asReadonly();
   readonly searchResults = this._searchResults.asReadonly();
+
+  setReply(message: IMessage) {
+    this._replyingTo.set(message);
+  }
+
+  clearReply() {
+    this._replyingTo.set(null);
+  }
+
+  updateMessagePin(event: { id: string; isPinned: boolean }) {
+    this._messages.update((items) =>
+      items.map((item) => (item.id === event.id ? { ...item, isPinned: event.isPinned } : item)),
+    );
+  }
+
+  setMessagePin(messageId: string, isPinned: boolean) {
+    this._isLoading.set(true);
+    this._error.set(null);
+    return this._messagesApi.setPinned(messageId, isPinned).pipe(
+      catchError((err) => {
+        const message = err?.error?.detail || 'Unable to edit message.';
+        this._error.set(message);
+        return throwError(() => new Error(message));
+      }),
+      finalize(() => this._isLoading.set(false)),
+    );
+  }
+
+  toggleMessageReactions(event: {
+    messageId: string;
+    userId: string;
+    displayName: string;
+    emoji: string;
+    isRemoved: boolean;
+  }) {
+    this._messages.update((items) =>
+      items.map((item) => {
+        if (item.id !== event.messageId) return item;
+        const reactions = item.reactions.filter(
+          (reaction) => reaction.userId !== event.userId || reaction.emoji !== event.emoji,
+        );
+        if (!event.isRemoved)
+          reactions.push({
+            userId: event.userId,
+            displayName: event.displayName,
+            emoji: event.emoji,
+          });
+        return { ...item, reactions };
+      }),
+    );
+  }
+
+  toggleReaction(messageId: string, emoji: string): Observable<IToggleReactionResponse> {
+    this._isLoading.set(true);
+    this._error.set(null);
+    return this._messagesApi.toggleReaction(messageId, emoji).pipe(
+      catchError((err) => {
+        const message = err?.error?.detail || 'Unable to update reaction.';
+        this._error.set(message);
+        return throwError(() => new Error(message));
+      }),
+      finalize(() => this._isLoading.set(false)),
+    );
+  }
+
+  updateMessages(event: { id: string; conversationId: string; deletedAtUtc: string }) {
+    this._messages.update((items) =>
+      items.map((item) =>
+        item.id === event.id
+          ? { ...item, text: null, contentJson: null, deletedAtUtc: event.deletedAtUtc }
+          : item,
+      ),
+    );
+  }
 
   editMessage(messageId: string, text: string): Observable<IMessage> {
     this._isLoading.set(true);
@@ -153,7 +219,7 @@ export class ConversationStore {
         console.log('Message sent:', message);
         if (message.conversationId !== this._selectedConversation()?.id) return;
         this.upsertMessage(message);
-        this._replyingTo.set(null);
+        if (this._replyingTo()?.id === request.replyToMessageId) this._replyingTo.set(null);
       }),
       catchError((err) => {
         const message = err?.error?.detail || 'Unable to send message.';
@@ -225,6 +291,7 @@ export class ConversationStore {
     const isExists = this.conversations().some((c) => c.id === conversation.id);
     if (!isExists) return;
 
+    if (this._selectedConversation()?.id !== conversation.id) this._replyingTo.set(null);
     this._selectedConversation.set(conversation);
     this._router.navigate(['conversations', conversation.publicId]);
   }
@@ -265,5 +332,6 @@ export class ConversationStore {
   resetState() {
     console.log('Resetting conversation store state...');
     this._selectedConversation.set(null);
+    this._replyingTo.set(null);
   }
 }

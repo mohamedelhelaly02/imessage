@@ -6,7 +6,9 @@
 .message-bubble p { margin:4px 0; white-space:pre-wrap; }
 .message-bubble a { color:inherit; }
 .message-bubble.deleted { background:#edf0f4; color:#788394; font-style:italic; }
-.sender-name,.forward-label,.reply-label { display:block; margin-bottom:4px; font-size:11px; opacity:.75; }
+.sender-name,.forward-label { display:block; margin-bottom:4px; font-size:11px; opacity:.75; }
+.reply-label { display:flex; flex-direction:column; gap:1px; margin:0 0 8px; padding:5px 8px; border-inline-start:3px solid currentColor; border-radius:3px; background:rgba(90,110,140,.09); font-size:11px; line-height:1.35; opacity:.82; }
+.reply-label span { overflow:hidden; max-width:280px; text-overflow:ellipsis; white-space:nowrap; }
 .message-meta { display:flex; justify-content:flex-end; align-items:center; gap:6px; margin-top:5px; font-size:10px; opacity:.72; }
 .receipt { font-weight:700; letter-spacing:-2px; }
 .media-image,.message-bubble video { display:block; max-width:min(100%,360px); max-height:360px; border-radius:12px; object-fit:cover; cursor:pointer; }

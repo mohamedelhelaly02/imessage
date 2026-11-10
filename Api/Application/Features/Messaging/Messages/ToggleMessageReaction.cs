@@ -37,12 +37,19 @@ public sealed class ToggleMessageReaction : IEndpoint
                 item.UserId == user.Id && item.Emoji == request.Emoji, token);
             bool removed = existing is not null;
             if (existing is null)
+            {
                 db.MessageReactions.Add(new MessageReaction
                 {
-                    MessageId = message.Id, UserId = user.Id, Emoji = request.Emoji, CreatedAtUtc = DateTime.UtcNow
+                    MessageId = message.Id,
+                    UserId = user.Id,
+                    Emoji = request.Emoji,
+                    CreatedAtUtc = DateTime.UtcNow
                 });
+            }
             else
+            {
                 db.MessageReactions.Remove(existing);
+            }
 
             await db.SaveChangesAsync(token);
             string displayName = await db.Users.Where(item => item.Id == user.Id)

@@ -23,6 +23,12 @@ export class ChatComposer {
   private recorder?: MediaRecorder;
   private recordingChunks: BlobPart[] = [];
 
+  replyPreview(reply: IMessage): string {
+    if (reply.deletedAtUtc) return 'Message deleted';
+    if (reply.text?.trim()) return reply.text;
+    return reply.type === 'VoiceNote' ? 'Voice message' : reply.type;
+  }
+
   onMessageInput(event: Event): void {
     const input = event.target as HTMLTextAreaElement;
     this.message.set(input.value);

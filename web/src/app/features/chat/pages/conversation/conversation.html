@@ -20,24 +20,22 @@
   <app-chat-messages
     [messages]="messages()"
     [currentUserId]="currentUserId()"
-    /* (onReact)="react($event)" */
+    (onReact)="react($event)"
     (onEdit)="editMessage($event)"
-    /* (onReply)="setReply($event)" */
+    (onReply)="setReply($event)"
     (onDelete)="deleteMessage($event)"
-    /* (onForward)="forwardMessage($event)" */
-    /* (onPin)="setMessagePin($event)" */
+    (onPin)="setMessagePin($event)"
   ></app-chat-messages>
 
   <app-chat-composer
-    /* [replyTo]="replyingTo()" */
+    [replyTo]="replyMessage()"
     [disabled]="isLoading()"
-    /* (onClearReply)="clearReply()" */
+    (onClearReply)="clearReply()"
     (onTyping)="onUserTyping()"
     (onMessageSend)="onMessageChanged($event)"
     (onFileSelected)="onFileSelected($event)"
     (onVoiceMessage)="onVoiceMessage($event)"
     (onLocationShare)="onLocationShare($event)"
     (onContactShare)="onContactShare($event)"
-    /* (onStickerSelected)="onStickerSelected($event)" */
   ></app-chat-composer>
 </main>

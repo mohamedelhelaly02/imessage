@@ -1,5 +1,4 @@
 import { Component, computed, DestroyRef, effect, inject, OnDestroy, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
 import { ConversationStore } from '../../services/store';
 import { MessagesApi, IMessage, MessageType } from '../../services/messages-api';
 import { ChatHeader } from './components/chat-header/chat-header';
@@ -30,6 +29,7 @@ export class Conversation implements OnDestroy {
   readonly error = this.conversationStore.error;
   readonly activeConversationId = computed(() => this.selectedConversation()?.id ?? '');
   readonly searchResults = this.conversationStore.searchResults;
+  readonly replyMessage = this.conversationStore.replyingToMessage;
 
   readonly hasOlderMessages = signal(false);
 
@@ -60,19 +60,14 @@ export class Conversation implements OnDestroy {
     //       : receipt) }
     //     : item));
     // });
-    // this.hub.messageReactionChanged$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
-    //   this.messages.update(items => items.map(item => {
-    //     if (item.id !== event.messageId) return item;
-    //     const reactions = item.reactions.filter(reaction =>
-    //       reaction.userId !== event.userId || reaction.emoji !== event.emoji);
-    //     if (!event.isRemoved) reactions.push({ userId: event.userId, displayName: event.displayName, emoji: event.emoji });
-    //     return { ...item, reactions };
-    //   }));
-    // });
-    // this.hub.messagePinChanged$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(event => {
-    //   this.messages.update(items => items.map(item => item.id === event.id
-    //     ? { ...item, isPinned: event.isPinned } : item));
-    // });
+    this.hub.messageReactionChanged$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((event) => {
+        this.conversationStore.toggleMessageReactions(event);
+      });
+    this.hub.messagePinChanged$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event) => {
+      this.conversationStore.updateMessagePin(event);
+    });
   }
 
   private openConversation(conversationId: string): void {
@@ -152,10 +147,12 @@ export class Conversation implements OnDestroy {
   //   await this.sendFile(file, 'Sticker');
   // }
 
-  // async react(event: { messageId: string; emoji: string }): Promise<void> {
-  //   try { await firstValueFrom(this.messagesApi.toggleReaction(event.messageId, event.emoji)); }
-  //   catch { this.error.set('Unable to update reaction.'); }
-  // }
+  react(event: { messageId: string; emoji: string }): void {
+    this.conversationStore
+      .toggleReaction(event.messageId, event.emoji)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
+  }
 
   editMessage(message: IMessage): void {
     const text = window.prompt('Edit message', message.text ?? '');
@@ -183,15 +180,20 @@ export class Conversation implements OnDestroy {
   //   catch { this.error.set('Unable to forward message.'); }
   // }
 
-  // async setMessagePin(message: IMessage): Promise<void> {
-  //   try {
-  //     await firstValueFrom(this.messagesApi.setPinned(message.id, !message.isPinned));
-  //     this.messages.update(items => items.map(item => item.id === message.id ? { ...item, isPinned: !item.isPinned } : item));
-  //   } catch { this.error.set('Unable to update pinned message.'); }
-  // }
+  setMessagePin(message: IMessage): void {
+    this.conversationStore
+      .setMessagePin(message.id, !message.isPinned)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
+  }
 
-  // setReply(message: IMessage): void { this.replyingTo.set(message); }
-  // clearReply(): void { this.replyingTo.set(null); }
+  setReply(message: IMessage): void {
+    this.conversationStore.setReply(message);
+  }
+
+  clearReply(): void {
+    this.conversationStore.clearReply();
+  }
 
   async loadOlderMessages(): Promise<void> {
     // const first = this.messages()[0];
@@ -237,19 +239,25 @@ export class Conversation implements OnDestroy {
   private async sendFile(file: File, type: MessageType): Promise<void> {
     const conversationId = this.activeConversationId();
     if (!conversationId) return;
+    const replyToMessageId = this.replyMessage()?.id ?? null;
 
     this.conversationStore
       .uploadAttachment(conversationId, type, file)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((upload) => this.send({ type, attachmentUploadIds: [upload.uploadId] }));
+      .subscribe((upload) =>
+        this.send({ type, attachmentUploadIds: [upload.uploadId] }, replyToMessageId),
+      );
   }
 
-  private send(request: {
-    type: MessageType;
-    text?: string;
-    contentJson?: string;
-    attachmentUploadIds: string[];
-  }) {
+  private send(
+    request: {
+      type: MessageType;
+      text?: string;
+      contentJson?: string;
+      attachmentUploadIds: string[];
+    },
+    replyToMessageId = this.replyMessage()?.id ?? null,
+  ) {
     const conversationId = this.activeConversationId();
     if (!conversationId) return;
 
@@ -259,7 +267,7 @@ export class Conversation implements OnDestroy {
         type: request.type,
         text: request.text,
         contentJson: request.contentJson,
-        replyToMessageId: null,
+        replyToMessageId,
         attachmentUploadIds: request.attachmentUploadIds,
       })
       .pipe(takeUntilDestroyed(this.destroyRef))

@@ -8,7 +8,18 @@
         @if (message.deletedAtUtc) {
           <p class="deleted-label">Message deleted</p>
         } @else {
-          <!-- @if (repliedMessage(message); as reply) { <small class="reply-label">↪ {{ reply.senderDisplayName }}: {{ reply.text || reply.type }}</small> } -->
+          @if (message.replyToMessageId) {
+            @if (repliedMessage(message); as reply) {
+              <div class="reply-label" (click)="jumpToOriginalMessage(reply.id)"  >
+                <strong>{{ reply.senderDisplayName }}</strong>
+                <span>{{ replyPreview(reply) }}</span>
+              </div>
+            } @else {
+              <div class="reply-label">
+                <strong>Reply</strong><span>Original message unavailable</span>
+              </div>
+            }
+          }
           @switch (message.type) {
             @case ('Image') {
               @for (file of message.attachments; track file.id) {

@@ -1,5 +1,5 @@
 <div class="imessage-composer">
-  @if (replyTo(); as reply) { <div class="reply-composer"><span>Replying to {{ reply.senderDisplayName }} · {{ reply.text || reply.type }}</span><button type="button" (click)="onClearReply.emit()">×</button></div> }
+  @if (replyTo(); as reply) { <div class="reply-composer"><span>Replying to {{ reply.senderDisplayName }} · {{ replyPreview(reply) }}</span><button type="button" (click)="onClearReply.emit()">×</button></div> }
   <input #fileInput type="file" hidden (change)="onFileChange($event)" />
   <input #stickerInput type="file" accept="image/*" hidden (change)="onStickerChange($event)" />
 

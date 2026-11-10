@@ -39,13 +39,49 @@ export class ChatMessages {
   //   }
   // }
 
+  jumpToOriginalMessage(messageId: string) {
+    document
+      .getElementById(`message-${messageId}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   isMine(message: IMessage): boolean {
     return message.senderUserId === this.currentUserId();
   }
 
-  // repliedMessage(message: IMessage): IMessage | null {
-  //   return this.messages().find(item => item.id === message.replyToMessageId) ?? null;
-  // }
+  repliedMessage(message: IMessage): IMessage | null {
+    if (!message.replyToMessageId) return null;
+    return this.messages().find((item) => item.id === message.replyToMessageId) ?? null;
+  }
+
+  replyPreview(message: IMessage): string {
+    if (message.deletedAtUtc) return 'Message deleted';
+    if (message.text?.trim()) return message.text;
+    switch (message.type) {
+      case 'Image':
+        return 'Photo';
+      case 'Video':
+        return 'Video';
+      case 'Audio':
+        return 'Audio';
+      case 'VoiceNote':
+        return 'Voice message';
+      case 'Document':
+        return message.attachments[0]?.fileName ?? 'File';
+      case 'Location':
+        return 'Shared location';
+      case 'Contact':
+        return 'Contact';
+      case 'Sticker':
+        return 'Sticker';
+      case 'Gif':
+        return 'GIF';
+      case 'Link':
+        return 'Link';
+      default:
+        return 'Message';
+    }
+  }
 
   download(attachment: IMessageAttachment) {
     const url = this.getUrl(attachment.id);
@@ -109,19 +145,5 @@ export class ChatMessages {
   //   if (message.receipts.some(receipt => receipt.readAtUtc)) return '✓✓';
   //   if (message.receipts.some(receipt => receipt.deliveredAtUtc)) return '✓✓';
   //   return '✓';
-  // }
-
-  // private async loadAttachment(file: IMessageAttachment): Promise<string | null> {
-  //   if (this.loadedAttachments.has(file.id)) return this.getUrl(file.id);
-  //   this.loadedAttachments.add(file.id);
-  //   try {
-  //     const result = await firstValueFrom(this.messagesApi.getAttachment(file.id));
-  //     const url = URL.createObjectURL(result.blob);
-  //     this.attachmentUrls.update(urls => ({ ...urls, [file.id]: url }));
-  //     return url;
-  //   } catch {
-  //     this.loadedAttachments.delete(file.id);
-  //     return null;
-  //   }
   // }
 }
