@@ -103,6 +103,7 @@ export class SignalrService {
   async joinConversation(conversationId: string): Promise<void> {
     try {
       await this._hubConnection.invoke('JoinConversation', conversationId);
+      console.log(`Joined conversation: ${conversationId}`);
     } catch (error) {}
   }
 

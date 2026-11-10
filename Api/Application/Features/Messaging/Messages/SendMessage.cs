@@ -101,13 +101,15 @@ public sealed class SendMessage : IEndpoint
             if (!string.IsNullOrWhiteSpace(request.ReplyToMessageId) &&
                 !await dbContext.Messages.AnyAsync(item => item.Id == request.ReplyToMessageId &&
                     item.ConversationId == request.ConversationId && item.DeletedAtUtc == null, cancellationToken))
+            {
                 return Result<Response>.Failure(MessagingErrors.InvalidReplyTarget);
+            }
 
             await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
 
             var now = DateTime.UtcNow;
             var pendingUploads = request.AttachmentUploadIds.Count == 0
-                ? new List<PendingObjectUpload>()
+                ? []
                 : await dbContext.PendingObjectUploads
                     .Where(item => request.AttachmentUploadIds.Contains(item.Id) &&
                         item.UserId == currentUser.Id && item.ConversationId == request.ConversationId &&
@@ -130,7 +132,7 @@ public sealed class SendMessage : IEndpoint
                 ContentJson = request.ContentJson,
                 ReplyToMessageId = request.ReplyToMessageId,
                 CreatedAtUtc = now,
-                Attachments = pendingUploads.Select(item => new MessageAttachment
+                Attachments = [.. pendingUploads.Select(item => new MessageAttachment
                 {
                     ObjectKey = item.ObjectKey,
                     FileName = item.FileName,
@@ -140,7 +142,7 @@ public sealed class SendMessage : IEndpoint
                     Height = item.Height,
                     DurationSeconds = item.DurationSeconds,
                     CreatedAtUtc = now
-                }).ToList()
+                })]
             };
 
             foreach (var pendingUpload in pendingUploads)
@@ -149,21 +151,26 @@ public sealed class SendMessage : IEndpoint
             List<string> recipientIds = await dbContext.Participants.AsNoTracking()
                 .Where(item => item.ConversationId == request.ConversationId && item.UserId != currentUser.Id)
                 .Select(item => item.UserId).ToListAsync(cancellationToken);
-            message.Receipts = recipientIds.Select(userId => new MessageReceipt
-            {
-                UserId = userId,
-                DeliveredAtUtc = null,
-                ReadAtUtc = null
-            }).ToList();
+
+            message.Receipts = [.. recipientIds.Select(
+                userId => new MessageReceipt
+                {
+                    UserId = userId,
+                    DeliveredAtUtc = null,
+                    ReadAtUtc = null
+                })];
 
             dbContext.Messages.Add(message);
+
             var conversation = await dbContext.Conversations.FirstAsync(item => item.Id == request.ConversationId, cancellationToken);
             conversation.LastMessageAtUtc = now;
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
 
             var response = await LoadResponseAsync(dbContext, message.Id, cancellationToken);
+
             await notifier.NotifyMessageCreatedAsync(request.ConversationId, response!, cancellationToken);
+
             return Result<Response>.Success(response!);
         }
 

@@ -2,11 +2,13 @@
   @if (replyTo(); as reply) { <div class="reply-composer"><span>Replying to {{ reply.senderDisplayName }} · {{ reply.text || reply.type }}</span><button type="button" (click)="onClearReply.emit()">×</button></div> }
   <input #fileInput type="file" hidden (change)="onFileChange($event)" />
   <input #stickerInput type="file" accept="image/*" hidden (change)="onStickerChange($event)" />
+
   <button class="composer-action-btn" type="button" aria-label="Attach a file" [disabled]="disabled()" (click)="fileInput.click()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
     </svg>
   </button>
+
   <button class="composer-action-btn" type="button" aria-label="Share contact" [disabled]="disabled()" (click)="shareContact()">👤</button>
   <button class="composer-action-btn" type="button" aria-label="Send sticker" [disabled]="disabled()" (click)="stickerInput.click()">◇</button>
   <button class="composer-action-btn" type="button" aria-label="Share location" [disabled]="disabled()" (click)="shareLocation()">

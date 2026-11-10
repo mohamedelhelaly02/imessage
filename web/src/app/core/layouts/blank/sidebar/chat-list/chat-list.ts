@@ -5,6 +5,7 @@ import { AuthStore } from '../../../../../features/auth/services/store';
 import { DatePipe } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SignalrService } from '../../../../services/signalr';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   imports: [DatePipe, TranslatePipe],

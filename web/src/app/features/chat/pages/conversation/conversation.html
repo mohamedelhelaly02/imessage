@@ -13,27 +13,31 @@
       @for (result of searchResults(); track result.id) { <button type="button" (click)="jumpToMessage(result.id)">{{ result.senderDisplayName }}: {{ result.text }}</button> }
     </div>
   }
-  @if (error(); as message) { <p class="chat-error" role="alert">{{ message }}</p> }
+  @if (error(); as message) {
+    <p class="chat-error" role="alert">{{ message }}</p>
+  }
+
   <app-chat-messages
     [messages]="messages()"
     [currentUserId]="currentUserId()"
-    (onReact)="react($event)"
+    /* (onReact)="react($event)" */
     (onEdit)="editMessage($event)"
-    (onReply)="setReply($event)"
+    /* (onReply)="setReply($event)" */
     (onDelete)="deleteMessage($event)"
-    (onForward)="forwardMessage($event)"
-    (onPin)="setMessagePin($event)"
+    /* (onForward)="forwardMessage($event)" */
+    /* (onPin)="setMessagePin($event)" */
   ></app-chat-messages>
+
   <app-chat-composer
-    [replyTo]="replyingTo()"
-    [disabled]="isSending()"
-    (onClearReply)="clearReply()"
+    /* [replyTo]="replyingTo()" */
+    [disabled]="isLoading()"
+    /* (onClearReply)="clearReply()" */
     (onTyping)="onUserTyping()"
     (onMessageSend)="onMessageChanged($event)"
     (onFileSelected)="onFileSelected($event)"
     (onVoiceMessage)="onVoiceMessage($event)"
     (onLocationShare)="onLocationShare($event)"
     (onContactShare)="onContactShare($event)"
-    (onStickerSelected)="onStickerSelected($event)"
+    /* (onStickerSelected)="onStickerSelected($event)" */
   ></app-chat-composer>
 </main>

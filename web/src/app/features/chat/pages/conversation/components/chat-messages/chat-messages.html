@@ -2,62 +2,150 @@
   @for (message of messages(); track message.id) {
     <article class="message-row" [id]="'message-' + message.id" [class.mine]="isMine(message)">
       <div class="message-bubble" [class.deleted]="!!message.deletedAtUtc">
-        @if (!isMine(message) && !message.deletedAtUtc) { <small class="sender-name">{{ message.senderDisplayName }}</small> }
+        @if (!isMine(message) && !message.deletedAtUtc) {
+          <small class="sender-name">{{ message.senderDisplayName }}</small>
+        }
         @if (message.deletedAtUtc) {
           <p class="deleted-label">Message deleted</p>
         } @else {
-          @if (repliedMessage(message); as reply) { <small class="reply-label">↪ {{ reply.senderDisplayName }}: {{ reply.text || reply.type }}</small> }
+          <!-- @if (repliedMessage(message); as reply) { <small class="reply-label">↪ {{ reply.senderDisplayName }}: {{ reply.text || reply.type }}</small> } -->
           @switch (message.type) {
             @case ('Image') {
-              @for (file of message.attachments; track file.id) { @if (getUrl(file.id); as url) { <img class="media-image" [src]="url" [alt]="file.fileName" (click)="download(file)" /> } }
-              @if (message.text) { <p>{{ message.text }}</p> }
+              @for (file of message.attachments; track file.id) {
+                @if (getUrl(file.id); as url) {
+                  <img class="media-image" [src]="url" [alt]="file.fileName" />
+                }
+              }
+              @if (message.text) {
+                <p>{{ message.text }}</p>
+              }
             }
             @case ('Video') {
-              @for (file of message.attachments; track file.id) { @if (getUrl(file.id); as url) { <video controls [src]="url"></video> } }
-              @if (message.text) { <p>{{ message.text }}</p> }
+              @for (file of message.attachments; track file.id) {
+                @if (getUrl(file.id); as url) {
+                  <video controls [src]="url"></video>
+                }
+              }
+              @if (message.text) {
+                <p>{{ message.text }}</p>
+              }
             }
-            @case ('Audio') { @for (file of message.attachments; track file.id) { @if (getUrl(file.id); as url) { <audio controls [src]="url"></audio> } } }
+            @case ('Audio') {
+              @for (file of message.attachments; track file.id) {
+                @if (getUrl(file.id); as url) {
+                  <audio controls [src]="url"></audio>
+                }
+              }
+            }
             @case ('VoiceNote') {
-              @for (file of message.attachments; track file.id) { @if (getUrl(file.id); as url) { <audio controls [src]="url"></audio> } }
+              @for (file of message.attachments; track file.id) {
+                @if (getUrl(file.id); as url) {
+                  <audio controls [src]="url"></audio>
+                }
+              }
               <small>Voice message</small>
             }
-            @case ('Document') { @for (file of message.attachments; track file.id) { <button class="file-link" (click)="download(file)">📎 {{ file.fileName }} · {{ file.sizeBytes | number }} bytes</button> } @if (message.text) { <p>{{ message.text }}</p> } }
-            @case ('Sticker') { @for (file of message.attachments; track file.id) { @if (getUrl(file.id); as url) { <img class="sticker-image" [src]="url" [alt]="file.fileName" /> } } }
-            @case ('Gif') { @for (file of message.attachments; track file.id) { @if (getUrl(file.id); as url) { <img class="media-image" [src]="url" [alt]="file.fileName" /> } } }
-            @case ('Location') { @if (location(message); as point) { <a target="_blank" rel="noopener" [href]="'https://maps.google.com/?q=' + point.latitude + ',' + point.longitude">📍 Shared location</a> } }
-            @case ('Contact') { @if (contact(message); as card) { <p>👤 {{ card.name }}</p><small>{{ card.phone }}</small> } }
-            @case ('Link') { @if (linkUrl(message); as url) { <a target="_blank" rel="noopener" [href]="url">{{ message.text || url }}</a> } }
-            @default { <p>{{ message.text }}</p> }
-          }
-          @if (message.isForwarded) { <small class="forward-label">Forwarded</small> }
-          <div class="message-meta">
-            @if (message.isPinned) { <span aria-label="Pinned">📌</span> }
-            <time>{{ message.createdAtUtc | date:'shortTime' }}</time>
-            @if (message.editedAtUtc) { <span>edited</span> }
-            @if (isMine(message)) {
-              <span class="receipt">{{ receiptState(message) }}</span>
+            @case ('Document') {
+              @for (file of message.attachments; track file.id) {
+                <button class="file-link" (click)="download(file)">
+                  📎 {{ file.fileName }} · {{ file.sizeBytes | number }} bytes
+                </button>
+              }
+              @if (message.text) {
+                <p>{{ message.text }}</p>
+              }
             }
+            @case ('Sticker') {
+              @for (file of message.attachments; track file.id) {
+                @if (getUrl(file.id); as url) {
+                  <img class="sticker-image" [src]="url" [alt]="file.fileName" />
+                }
+              }
+            }
+            @case ('Gif') {
+              @for (file of message.attachments; track file.id) {
+                @if (getUrl(file.id); as url) {
+                  <img class="media-image" [src]="url" [alt]="file.fileName" />
+                }
+              }
+            }
+            @case ('Location') {
+              @if (getLocation(message); as point) {
+                <a
+                  target="_blank"
+                  rel="noopener"
+                  [href]="'https://maps.google.com/?q=' + point.latitude + ',' + point.longitude"
+                  >📍 Shared location</a
+                >
+              }
+            }
+            @case ('Contact') {
+              @if (getContact(message); as card) {
+                <p>👤 {{ card.name }}</p>
+                <small>{{ card.phone }}</small>
+              }
+            }
+            @case ('Link') {
+              @if (linkUrl(message); as url) {
+                <a target="_blank" rel="noopener" [href]="url">{{ message.text || url }}</a>
+              }
+            }
+            @default {
+              <p>{{ message.text }}</p>
+            }
+          }
+          @if (message.isForwarded) {
+            <small class="forward-label">Forwarded</small>
+          }
+          <div class="message-meta">
+            @if (message.isPinned) {
+              <span aria-label="Pinned">📌</span>
+            }
+            <time>{{ message.createdAtUtc | date: 'shortTime' }}</time>
+            @if (message.editedAtUtc) {
+              <span>edited</span>
+            }
+            <!-- @if (isMine(message)) {
+              <span class="receipt">{{ receiptState(message) }}</span>
+            } -->
           </div>
         }
       </div>
       <div class="message-tools">
         <div class="reaction-picker">
           @for (emoji of quickReactions; track emoji) {
-            <button type="button" [attr.aria-label]="'React ' + emoji" (click)="onReact.emit({ messageId: message.id, emoji })">{{ emoji }}</button>
+            <button
+              type="button"
+              [attr.aria-label]="'React ' + emoji"
+              (click)="onReact.emit({ messageId: message.id, emoji })"
+            >
+              {{ emoji }}
+            </button>
           }
         </div>
         @if (!message.deletedAtUtc) {
           <button type="button" title="Forward" (click)="onForward.emit(message)">↗</button>
           <button type="button" title="Reply" (click)="onReply.emit(message)">↩</button>
-          <button type="button" title="Pin" (click)="onPin.emit(message)">{{ message.isPinned ? '📌' : '⌖' }}</button>
-          @if (isMine(message) && message.type === 'Text') { <button type="button" title="Edit" (click)="onEdit.emit(message)">✎</button> }
-          @if (isMine(message)) { <button type="button" title="Delete" (click)="onDelete.emit(message)">×</button> }
+          <button type="button" title="Pin" (click)="onPin.emit(message)">
+            {{ message.isPinned ? '📌' : '⌖' }}
+          </button>
+          @if (isMine(message) && message.type === 'Text') {
+            <button type="button" title="Edit" (click)="onEdit.emit(message)">✎</button>
+          }
+          @if (isMine(message)) {
+            <button type="button" title="Delete" (click)="onDelete.emit(message)">×</button>
+          }
         }
       </div>
       @if (message.reactions.length) {
         <div class="reaction-list">
           @for (reaction of message.reactions; track reaction.userId + reaction.emoji) {
-            <button type="button" (click)="onReact.emit({ messageId: message.id, emoji: reaction.emoji })">{{ reaction.emoji }} {{ reaction.displayName }}</button>
+            <button
+              type="button"
+              (click)="onReact.emit({ messageId: message.id, emoji: reaction.emoji })"
+            >
+              {{ reaction.emoji }} {{ reaction.displayName }}
+            </button>
           }
         </div>
       }

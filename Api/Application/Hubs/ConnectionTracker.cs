@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Api.Application.Interfaces;
 
-namespace Api.Infrastructure;
+namespace Api.Application.Hubs;
 
 internal sealed class ConnectionTracker(ILogger<ConnectionTracker> logger) : IConnectionTracker
 {

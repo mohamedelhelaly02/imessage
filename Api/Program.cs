@@ -4,7 +4,6 @@ using Api.Application.Behaviors;
 using Api.Application.Hubs;
 using Api.Application.Interfaces;
 using Api.Domain.Entities;
-using Api.Infrastructure;
 using Api.Infrastructure.External;
 using Api.Infrastructure.Identity;
 using Api.Infrastructure.Messaging;

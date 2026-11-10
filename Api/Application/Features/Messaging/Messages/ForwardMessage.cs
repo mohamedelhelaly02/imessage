@@ -49,12 +49,12 @@ public sealed class ForwardMessage : IEndpoint
                 ContentJson = source.ContentJson,
                 IsForwarded = true,
                 CreatedAtUtc = now,
-                Attachments = source.Attachments.Select(file => new MessageAttachment
+                Attachments = [.. source.Attachments.Select(file => new MessageAttachment
                 {
                     ObjectKey = file.ObjectKey, FileName = file.FileName, ContentType = file.ContentType,
                     SizeBytes = file.SizeBytes, Width = file.Width, Height = file.Height,
                     DurationSeconds = file.DurationSeconds, CreatedAtUtc = now
-                }).ToList()
+                })]
             };
             var recipientIds = await db.Participants.Where(item => item.ConversationId == request.TargetConversationId &&
                 item.UserId != user.Id).Select(item => item.UserId).ToListAsync(token);

@@ -3,6 +3,7 @@ import { RouterOutlet } from '@angular/router';
 import { AuthStore } from './features/auth/services/store';
 import { SignalrService } from './core/services/signalr';
 import { NgxSonnerToaster } from 'ngx-sonner';
+import { ConversationStore } from './features/chat/services/store';
 
 @Component({
   imports: [RouterOutlet, NgxSonnerToaster],
@@ -12,6 +13,7 @@ import { NgxSonnerToaster } from 'ngx-sonner';
 })
 export class App {
   private readonly _authStore = inject(AuthStore);
+  private readonly _conversationStore = inject(ConversationStore);
   private readonly _signalrService = inject(SignalrService);
 
   constructor() {
@@ -20,7 +22,7 @@ export class App {
       const token = this._authStore.accessToken();
 
       if (isAuthenticated && token) {
-        this.connect();
+        this.connect().then(() => this._conversationStore.resetState());
       } else if (!isAuthenticated) {
         this.disconnect();
       }
