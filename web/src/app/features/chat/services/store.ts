@@ -1,4 +1,4 @@
-import { inject, Service, signal } from '@angular/core';
+import { inject, Service, Signal, signal } from '@angular/core';
 import { ConversationApi } from './conversation-api';
 import { catchError, finalize, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
 import { IConversation } from '../models/conversation';
@@ -27,6 +27,7 @@ export class ConversationStore {
   private readonly _messages = signal<IMessage[]>([]);
   private readonly _replyingTo = signal<IMessage | null>(null);
   private readonly _searchResults = signal<ISearchMessageResponse[]>([]);
+  private readonly _hasOlderMessages = signal<boolean>(false);
 
   readonly isLoading = this._isLoading.asReadonly();
   readonly error = this._error.asReadonly();
@@ -36,6 +37,31 @@ export class ConversationStore {
   readonly messages = this._messages.asReadonly();
   readonly replyingToMessage = this._replyingTo.asReadonly();
   readonly searchResults = this._searchResults.asReadonly();
+  readonly hasOlderMessages = this._hasOlderMessages.asReadonly();
+
+  setHasOlderMessages(value: boolean) {
+    this._hasOlderMessages.set(value);
+  }
+
+  loadOlderMessages(conversationId: string, first: IMessage) {
+    this._isLoading.set(true);
+    this._error.set(null);
+
+    return this._messagesApi
+      .getMessages(conversationId, { createdAtUtc: first.createdAtUtc, id: first.id })
+      .pipe(
+        tap((older) => {
+          this._messages.update((items) => [...older, ...items]);
+          this._hasOlderMessages.set(older.length === 50);
+        }),
+        catchError((err) => {
+          const message = err?.error?.detail || 'Unable to edit message.';
+          this._error.set(message);
+          return throwError(() => new Error(message));
+        }),
+        finalize(() => this._isLoading.set(false)),
+      );
+  }
 
   setReply(message: IMessage) {
     this._replyingTo.set(message);

@@ -55,6 +55,39 @@ namespace Api.Migrations
                     b.ToTable("Conversations");
                 });
 
+            modelBuilder.Entity("Api.Domain.Entities.EmailConfirmationOtp", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CodeHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ConsumedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("FailedAttempts")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "ConsumedAtUtc", "ExpiresAtUtc");
+
+                    b.ToTable("EmailConfirmationOtps", (string)null);
+                });
+
             modelBuilder.Entity("Api.Domain.Entities.Message", b =>
                 {
                     b.Property<string>("Id")
@@ -583,6 +616,17 @@ namespace Api.Migrations
                         .IsRequired();
 
                     b.Navigation("CreatedBy");
+                });
+
+            modelBuilder.Entity("Api.Domain.Entities.EmailConfirmationOtp", b =>
+                {
+                    b.HasOne("Api.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Api.Domain.Entities.Message", b =>

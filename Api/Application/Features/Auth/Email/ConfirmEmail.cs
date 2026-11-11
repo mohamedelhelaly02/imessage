@@ -1,5 +1,3 @@
-using System.Buffers.Text;
-using System.Text;
 using Api.Application.Interfaces;
 using Api.Domain.Entities;
 using Api.Shared.Abstraction;
@@ -8,8 +6,10 @@ using Api.Shared.Helpers;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
+using System.Buffers.Text;
+using System.Text;
 
-namespace Api.Application.Features.Auth;
+namespace Api.Application.Features.Auth.Email;
 
 public sealed class ConfirmEmail : IEndpoint
 {

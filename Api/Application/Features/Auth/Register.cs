@@ -1,4 +1,4 @@
-using Api.Application.Interfaces;
+using Api.Application.Features.Auth.Email;
 using Api.Domain.Entities;
 using Api.Shared.Abstraction;
 using Api.Shared.Extensions;
@@ -7,19 +7,20 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Buffers.Text;
-using System.Text;
 
 namespace Api.Application.Features.Auth;
 
-public sealed class Register : IEndpoint
+internal sealed class Register : IEndpoint
 {
-    public sealed record Command(
+    public enum ClientType { Mobile, Web };
+
+    internal sealed record Command(
         string DisplayName,
         string Email,
-        string Password) : IRequest<Result<string>>;
+        string Password,
+        ClientType ClientType) : IRequest<Result<string>>;
 
-    public sealed class Validator : AbstractValidator<Command>
+    internal sealed class Validator : AbstractValidator<Command>
     {
         public Validator()
         {
@@ -38,10 +39,9 @@ public sealed class Register : IEndpoint
         }
     }
 
-    public sealed class Handler(
+    internal sealed class Handler(
         UserManager<User> userManager,
-        IEmailLinkGenerator emailLinkGenerator,
-        IEmailService emailService) : IRequestHandler<Command, Result<string>>
+        IEmailConfirmationStrategyResolver resolver) : IRequestHandler<Command, Result<string>>
     {
         public async Task<Result<string>> Handle(Command request, CancellationToken cancellationToken)
         {
@@ -97,16 +97,17 @@ public sealed class Register : IEndpoint
                 return Result<string>.Failure(UserErrors.RoleAssignmentFailed(errors));
             }
 
-            string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            IEmailConfirmationStrategy strategy = resolver.Resolve(request.ClientType);
 
-            var encodedEmail = Base64Url.EncodeToString(Encoding.UTF8.GetBytes(user.Email));
-            var encodedToken = Base64Url.EncodeToString(Encoding.UTF8.GetBytes(token));
+            var result = await strategy.SendConfirmationEmailAsync(user, cancellationToken);
 
-            string confirmationLink = emailLinkGenerator.GenerateConfirmEmailLink(encodedEmail, encodedToken);
+            if (!result.IsSuccess)
+                return Result<string>.Failure(result.Error!);
 
-            await emailService.SendEmailAsync(user.Email, "Confirm your email", $"Please confirm your account by clicking this link: <a href='{confirmationLink}'>confirm email</a>");
-
-            return Result<string>.Success("Registration completed successfully, check your inbox and confirm email.");
+            return Result<string>.Success(
+                request.ClientType == ClientType.Web
+                    ? "Registration completed successfully. Check your inbox and confirm your email."
+                    : "Registration completed successfully. Check your inbox for the confirmation code.");
         }
     }
 

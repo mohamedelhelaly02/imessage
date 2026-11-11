@@ -40,6 +40,6 @@ export class Register {
 
     const registerData = this.registerForm.getRawValue() as RegisterRequest;
 
-    this._authStore.register(registerData).subscribe();
+    this._authStore.register({  ...registerData, clientType: 'Web' }).subscribe();
   }
 }

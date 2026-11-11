@@ -31,7 +31,7 @@ export class Conversation implements OnDestroy {
   readonly searchResults = this.conversationStore.searchResults;
   readonly replyMessage = this.conversationStore.replyingToMessage;
 
-  readonly hasOlderMessages = signal(false);
+  readonly hasOlderMessages = this.conversationStore.hasOlderMessages;
 
   constructor() {
     effect(() => {
@@ -75,9 +75,12 @@ export class Conversation implements OnDestroy {
     this.conversationStore
       .getMessages(conversationId)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe();
+      .subscribe(() => {
+         this.conversationStore.setHasOlderMessages(this.messages().length === 50);
+      });
 
-    // this.hasOlderMessages.set(this.messages().length === 50);
+     
+
     // this.markRead(this.messages().filter(item => item.senderUserId !== this.authStore.user()?.id && !item.deletedAtUtc)
     //   .map(item => item.id));
   }
@@ -143,9 +146,9 @@ export class Conversation implements OnDestroy {
     });
   }
 
-  // async onStickerSelected(file: File): Promise<void> {
-  //   await this.sendFile(file, 'Sticker');
-  // }
+  onStickerSelected(file: File): void {
+    this.sendFile(file, 'Sticker');
+  }
 
   react(event: { messageId: string; emoji: string }): void {
     this.conversationStore
@@ -195,14 +198,15 @@ export class Conversation implements OnDestroy {
     this.conversationStore.clearReply();
   }
 
-  async loadOlderMessages(): Promise<void> {
-    // const first = this.messages()[0];
-    // const conversationId = this.activeConversationId;
-    // if (!first || !conversationId) return;
-    // const older = await firstValueFrom(this.messagesApi.getMessages(conversationId,
-    //   { createdAtUtc: first.createdAtUtc, id: first.id }));
-    // this.messages.update(items => [...older, ...items]);
-    // this.hasOlderMessages.set(older.length === 50);
+  loadOlderMessages(): void {
+    const first = this.messages()[0];
+    const conversationId = this.activeConversationId();
+    if (!first || !conversationId) return;
+
+    this.conversationStore
+      .loadOlderMessages(conversationId, first)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
   }
 
   search(term: string) {

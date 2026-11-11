@@ -1,6 +1,7 @@
 using Amazon.Runtime;
 using Amazon.S3;
 using Api.Application.Behaviors;
+using Api.Application.Features.Auth.Email;
 using Api.Application.Hubs;
 using Api.Application.Interfaces;
 using Api.Domain.Entities;
@@ -190,6 +191,19 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection(Email
 
 builder.Services.AddTransient<IEmailService, EmailService>();
 builder.Services.AddTransient<IEmailLinkGenerator, EmailLinkGenerator>();
+
+builder.Services.AddScoped<IEmailOtpService, EmailOtpService>();
+builder.Services.AddScoped<IEmailConfirmationStrategy, WebEmailConfirmationStrategy>();
+builder.Services.AddScoped<IEmailConfirmationStrategy, MobileEmailConfirmationStrategy>();
+builder.Services.AddScoped<IEmailConfirmationStrategyResolver, EmailConfirmationStrategyResolver>();
+
+builder.Services.AddOptions<OtpSettings>()
+    .Bind(builder.Configuration.GetSection(OtpSettings.SectionName))
+    .Validate(options => options.OtpLength == 6, "Otp length must be of 6 digits.")
+    .Validate(options => !string.IsNullOrEmpty(options.Secret), "Secret key is required.")
+    .Validate(options => options.MaxFailedAttempts > 0, "MaxFailedAttempts must be a greater than zero.")
+    .Validate(options => options.ExpirationMinutes > 0, "ExpirationMinutes must be a greater than zero.")
+    .ValidateOnStart();
 
 WebApplication app = builder.Build();
 
