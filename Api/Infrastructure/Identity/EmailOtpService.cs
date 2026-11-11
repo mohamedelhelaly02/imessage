@@ -43,7 +43,6 @@ internal sealed class EmailOtpService : IEmailOtpService
             return Result<string>.Failure(UserErrors.UserNotFound);
 
         var previousOtps = await _dbContext.EmailConfirmationOtps
-            .AsNoTracking()
             .Where(x => x.UserId == userId && x.ConsumedAtUtc == null)
             .ToListAsync(cancellationToken);
 
@@ -66,6 +65,63 @@ internal sealed class EmailOtpService : IEmailOtpService
         await transaction.CommitAsync(cancellationToken);
 
         return Result<string>.Success(code);
+    }
+
+    public async Task<Result<bool>> VerifyAndConfirmEmailAsync(
+        string userId,
+        string code,
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _dbContext.Users
+            .FirstOrDefaultAsync(x => x.Id == userId, cancellationToken);
+
+        if (user is null)
+            return Result<bool>.Failure(UserErrors.InvalidEmailConfirmationOtp);
+
+        if (user.EmailConfirmed)
+            return Result<bool>.Success(true);
+
+        await using var transaction = await _dbContext.Database
+            .BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
+
+        var otp = await _dbContext.EmailConfirmationOtps
+            .Where(x => x.UserId == userId && x.ConsumedAtUtc == null)
+            .OrderByDescending(x => x.CreatedAtUtc)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (otp is null)
+            return Result<bool>.Failure(UserErrors.InvalidEmailConfirmationOtp);
+
+        var now = DateTime.UtcNow;
+        if (otp.ExpiresAtUtc <= now || otp.FailedAttempts >= _otpSettings.MaxFailedAttempts)
+        {
+            otp.ConsumedAtUtc = now;
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return Result<bool>.Failure(UserErrors.InvalidEmailConfirmationOtp);
+        }
+
+        var expectedHash = Convert.FromHexString(otp.CodeHash);
+        var providedHash = Convert.FromHexString(GetHashedCode(code));
+
+        if (!CryptographicOperations.FixedTimeEquals(expectedHash, providedHash))
+        {
+            otp.FailedAttempts++;
+            if (otp.FailedAttempts >= _otpSettings.MaxFailedAttempts)
+                otp.ConsumedAtUtc = now;
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return Result<bool>.Failure(UserErrors.InvalidEmailConfirmationOtp);
+        }
+
+        otp.ConsumedAtUtc = now;
+        user.EmailConfirmed = true;
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+
+        return Result<bool>.Success(true);
     }
 
     private string GetHashedCode(string code)
