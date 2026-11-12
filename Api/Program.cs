@@ -9,7 +9,6 @@ using Api.Infrastructure.External;
 using Api.Infrastructure.Identity;
 using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence;
-using Api.Infrastructure.Persistence.Seed;
 using Api.Infrastructure.Storage;
 using Api.Shared;
 using Api.Shared.Extensions;
@@ -207,7 +206,7 @@ builder.Services.AddOptions<OtpSettings>()
 
 WebApplication app = builder.Build();
 
-await DbInitializer.SeedAsync(app.Services);
+//await DbInitializer.SeedAsync(app.Services);
 
 if (app.Environment.IsDevelopment())
 {

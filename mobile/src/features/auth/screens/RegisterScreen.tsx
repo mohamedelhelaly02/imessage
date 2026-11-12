@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -51,13 +50,16 @@ export default function RegisterScreen() {
 
     setIsSubmitting(true);
     try {
-      const message = await register({
+      await register({
         displayName: trimmedName,
         email: normalizedEmail,
         password,
         clientType: "Mobile",
       });
-      Alert.alert("Check your email", message);
+      router.replace({
+        pathname: "/(auth)/verifyOtp",
+        params: { email: normalizedEmail },
+      });
     } catch (error) {
       setRequestError(
         error instanceof Error
@@ -80,7 +82,7 @@ export default function RegisterScreen() {
       >
         <View style={styles.card}>
           <View style={styles.brandMark} accessibilityLabel="iMessage">
-            <Text style={styles.brandMarkText}>i</Text>
+            <Text style={styles.brandMarkText}>•••</Text>
           </View>
           <Text style={styles.eyebrow}>IMESSAGE</Text>
           <Text style={styles.title}>Create your account</Text>
@@ -203,15 +205,23 @@ const styles = StyleSheet.create({
     borderColor: "#E6ECF4",
     borderRadius: 28,
     borderWidth: 1,
+    elevation: 5,
     maxWidth: 480,
     padding: 26,
+    shadowColor: "#27426A",
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.09,
+    shadowRadius: 28,
     width: "100%",
   },
   brandMark: {
     alignItems: "center",
     alignSelf: "center",
-    backgroundColor: "#147EFB",
-    borderRadius: 20,
+    backgroundColor: "#3478F6",
+    borderBottomLeftRadius: 7,
+    borderBottomRightRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     height: 48,
     justifyContent: "center",
     marginBottom: 14,
@@ -219,9 +229,9 @@ const styles = StyleSheet.create({
   },
   brandMarkText: {
     color: "#FFFFFF",
-    fontSize: 30,
+    fontSize: 11,
     fontWeight: "700",
-    marginTop: -3,
+    letterSpacing: 1,
   },
   eyebrow: {
     color: "#147EFB",

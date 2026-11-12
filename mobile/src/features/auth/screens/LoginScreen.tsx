@@ -12,8 +12,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { login } from "../auth.service";
-import { tokenStorage } from "@/shared/token-storage";
-import { resetAuthRedirect } from "@/shared/api";
+import { useAuthSession } from "../auth-session";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -21,33 +20,53 @@ export default function LoginScreen() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requestError, setRequestError] = useState("");
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [useRecoveryCode, setUseRecoveryCode] = useState(false);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
+  const [recoveryCode, setRecoveryCode] = useState("");
+  const { updateAuthState } = useAuthSession();
 
   async function handleLogin() {
     const trimmedEmail = email.trim();
-    const trimmedPassword = password.trim();
+    setRequestError("");
+    if (!trimmedEmail || !password) {
+      setRequestError("Enter your email and password to continue.");
+      return;
+    }
 
     try {
       setIsSubmitting(true);
-      const { token, requiresTwoFactor } = await login({
+      const loginResult = await login({
         email: trimmedEmail,
-        password: trimmedPassword,
+        password,
+        twoFactorCode:
+          requiresTwoFactor && !useRecoveryCode ? twoFactorCode : undefined,
+        recoveryCode:
+          requiresTwoFactor && useRecoveryCode ? recoveryCode : undefined,
       });
 
-      if (requiresTwoFactor) {
-        router.replace("/(auth)/requiresTwoFactor");
+      if (loginResult.requiresTwoFactor) {
+        setRequiresTwoFactor(true);
         return;
       }
 
-      if (token && !requiresTwoFactor) {
-        await tokenStorage.setToken(token);
-        resetAuthRedirect();
+      if (loginResult.token) {
+        updateAuthState({
+          id: loginResult.id,
+          token: loginResult.token,
+          email: loginResult.email,
+          userName: loginResult.userName,
+          displayName: loginResult.displayName,
+        });
         router.replace("/(blank)/conversations");
+      } else {
+        setRequestError("The server returned an incomplete sign-in response.");
       }
     } catch (error) {
       setRequestError(
         error instanceof Error
           ? error.message
-          : "Registration failed. Please try again.",
+          : "Login failed. Please try again.",
       );
     } finally {
       setIsSubmitting(false);
@@ -65,12 +84,16 @@ export default function LoginScreen() {
       >
         <View style={styles.card}>
           <View style={styles.brandMark} accessibilityLabel="iMessage">
-            <Text style={styles.brandMarkText}>i</Text>
+            <Text style={styles.brandMarkText}>•••</Text>
           </View>
           <Text style={styles.eyebrow}>IMESSAGE</Text>
-          <Text style={styles.title}>Login in</Text>
+          <Text style={styles.title}>
+            {requiresTwoFactor ? "Two-step verification" : "Welcome back"}
+          </Text>
           <Text style={styles.subtitle}>
-            A few details, then you can start chatting.
+            {requiresTwoFactor
+              ? "Enter the code from your authenticator app to continue."
+              : "Sign in to pick up where your conversations left off."}
           </Text>
 
           {requestError ? (
@@ -81,42 +104,97 @@ export default function LoginScreen() {
 
           <Text style={styles.label}>Email</Text>
           <TextInput
+            accessibilityLabel="Email address"
+            autoCapitalize="none"
+            autoComplete="email"
+            autoCorrect={false}
+            keyboardType="email-address"
             placeholder="mohamed@example.com"
             value={email}
             onChangeText={setEmail}
-            style={[styles.input]}
+            style={styles.input}
+            editable={!requiresTwoFactor}
           />
 
-          <Text style={styles.label}>Password</Text>
+          {!requiresTwoFactor ? (
+            <Text style={styles.label}>Password</Text>
+          ) : null}
 
-          <View style={styles.passwordRow}>
-            <TextInput
-              accessibilityLabel="Password"
-              autoCapitalize="none"
-              autoComplete="current-password"
-              autoCorrect={false}
-              placeholder="Enter your password"
-              secureTextEntry={!showPassword}
-              style={styles.passwordInput}
-              value={password}
-              onChangeText={setPassword}
-              onSubmitEditing={handleLogin}
-              returnKeyType="go"
-            />
+          {!requiresTwoFactor ? (
+            <View style={styles.passwordRow}>
+              <TextInput
+                accessibilityLabel="Password"
+                autoCapitalize="none"
+                autoComplete="current-password"
+                autoCorrect={false}
+                placeholder="Enter your password"
+                secureTextEntry={!showPassword}
+                style={styles.passwordInput}
+                value={password}
+                onChangeText={setPassword}
+                onSubmitEditing={handleLogin}
+                returnKeyType="go"
+              />
 
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={
+                  showPassword ? "Hide password" : "Show password"
+                }
+                onPress={() => setShowPassword((value) => !value)}
+                style={styles.showButton}
+              >
+                <Text style={styles.showButtonText}>
+                  {showPassword ? "Hide" : "Show"}
+                </Text>
+              </Pressable>
+            </View>
+          ) : useRecoveryCode ? (
+            <>
+              <Text style={styles.label}>Recovery code</Text>
+              <TextInput
+                accessibilityLabel="Recovery code"
+                autoCapitalize="characters"
+                autoComplete="one-time-code"
+                onChangeText={setRecoveryCode}
+                onSubmitEditing={handleLogin}
+                placeholder="Enter a recovery code"
+                style={styles.input}
+                value={recoveryCode}
+              />
+            </>
+          ) : (
+            <>
+              <Text style={styles.label}>Authenticator code</Text>
+              <TextInput
+                accessibilityLabel="Authenticator code"
+                autoComplete="one-time-code"
+                keyboardType="number-pad"
+                maxLength={6}
+                onChangeText={(value) =>
+                  setTwoFactorCode(value.replace(/\D/g, ""))
+                }
+                onSubmitEditing={handleLogin}
+                placeholder="000000"
+                style={styles.input}
+                value={twoFactorCode}
+              />
+            </>
+          )}
+
+          {requiresTwoFactor ? (
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel={
-                showPassword ? "Hide password" : "Show password"
-              }
-              onPress={() => setShowPassword((value) => !value)}
-              style={styles.showButton}
+              onPress={() => setUseRecoveryCode((value) => !value)}
+              style={styles.recoveryToggle}
             >
-              <Text style={styles.showButtonText}>
-                {showPassword ? "Hide" : "Show"}
+              <Text style={styles.footerLink}>
+                {useRecoveryCode
+                  ? "Use authenticator code"
+                  : "Use recovery code"}
               </Text>
             </Pressable>
-          </View>
+          ) : null}
           <Pressable
             accessibilityRole="button"
             disabled={isSubmitting}
@@ -129,16 +207,20 @@ export default function LoginScreen() {
             {isSubmitting ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.submitButtonText}>Login</Text>
+              <Text style={styles.submitButtonText}>
+                {requiresTwoFactor ? "Verify and sign in" : "Sign in"}
+              </Text>
             )}
           </Pressable>
 
-          <View style={styles.footer}>
-            <Text style={styles.footnote}>Not have account yet? </Text>
-            <Pressable onPress={() => router.replace("/(auth)/register")}>
-              <Text style={styles.footerLink}>Sign up</Text>
-            </Pressable>
-          </View>
+          {!requiresTwoFactor ? (
+            <View style={styles.footer}>
+              <Text style={styles.footnote}>Not have account yet? </Text>
+              <Pressable onPress={() => router.replace("/(auth)/register")}>
+                <Text style={styles.footerLink}>Sign up</Text>
+              </Pressable>
+            </View>
+          ) : null}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -154,15 +236,23 @@ const styles = StyleSheet.create({
     borderColor: "#E6ECF4",
     borderRadius: 28,
     borderWidth: 1,
+    elevation: 5,
     maxWidth: 480,
     padding: 26,
+    shadowColor: "#27426A",
+    shadowOffset: { width: 0, height: 14 },
+    shadowOpacity: 0.09,
+    shadowRadius: 28,
     width: "100%",
   },
   brandMark: {
     alignItems: "center",
     alignSelf: "center",
-    backgroundColor: "#147EFB",
-    borderRadius: 20,
+    backgroundColor: "#3478F6",
+    borderBottomLeftRadius: 7,
+    borderBottomRightRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     height: 48,
     justifyContent: "center",
     marginBottom: 14,
@@ -170,9 +260,9 @@ const styles = StyleSheet.create({
   },
   brandMarkText: {
     color: "#FFFFFF",
-    fontSize: 30,
+    fontSize: 11,
     fontWeight: "700",
-    marginTop: -3,
+    letterSpacing: 1,
   },
   eyebrow: {
     color: "#147EFB",
@@ -231,6 +321,7 @@ const styles = StyleSheet.create({
   },
   showButton: { paddingHorizontal: 14, paddingVertical: 10 },
   showButtonText: { color: "#147EFB", fontSize: 13, fontWeight: "700" },
+  recoveryToggle: { alignSelf: "flex-start", marginTop: 14 },
   inputError: { borderColor: "#D14343" },
   fieldError: { color: "#B42318", fontSize: 12, lineHeight: 18, marginTop: 6 },
   requestError: {

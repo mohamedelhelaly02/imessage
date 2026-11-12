@@ -8,10 +8,7 @@ export const tokenStorage = {
     },
 
     async setToken(token: string): Promise<void> {
-        await SecureStore.setItemAsync(
-            ACCESS_TOKEN_KEY,
-            token
-        );
+        await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, token);
     },
 
     async removeToken(): Promise<void> {

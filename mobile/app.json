@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mobile",
+    "name": "iMessage",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -28,12 +28,14 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "backgroundColor": "#3478F6",
+          "image": "./assets/images/imessage-mark.png",
+          "imageWidth": 144
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-status-bar",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

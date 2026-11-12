@@ -35,11 +35,9 @@ public sealed class GetUsers : IEndpoint
                     user.ProfilePictureUrl,
                     user.LastSeenAtUtc))
                 .ToListAsync(cancellationToken);
-
             return Result<IReadOnlyList<Response>>.Success(users);
         }
     }
-
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {

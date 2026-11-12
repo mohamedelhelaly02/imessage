@@ -15,11 +15,11 @@ namespace Api.Application.Features.Auth;
 public sealed class Login : IEndpoint
 {
     public sealed record LoginResponse(
-        string? Id,
-        string? DisplayName,
+        string Id,
+        string DisplayName,
         string? Email,
         string? UserName,
-        string? Token,
+        string Token,
         bool RequiresTwoFactor);
 
     public record AuthResponse(

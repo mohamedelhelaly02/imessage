@@ -51,7 +51,7 @@ internal sealed class Register : IEndpoint
                 return Result<string>.Failure(UserErrors.EmailInUse);
 
             string encodedName = Uri.EscapeDataString(request.DisplayName);
-            string defaultPictureUrl = $"https://ui-avatars.com/api/?name={encodedName}&background=0D8ABC&color=fff&size=128&bold=true";
+            string defaultPictureUrl = $"https://ui-avatars.com/api/?name={encodedName}&background=25D366&color=fff&size=128&bold=true";
 
             User user = new()
             {
