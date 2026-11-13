@@ -1,11 +1,10 @@
-
 services:
   rustfs:
     image: rustfs/rustfs:1.0.3
     container_name: imessage-rustfs
     environment:
-      RUSTFS_ADDRESS: "0.0.0.0:9000"
-      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:9001"
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
       RUSTFS_CONSOLE_ENABLE: "true"
       RUSTFS_VOLUMES: "/data"
       RUSTFS_ACCESS_KEY: ${OBJECT_STORAGE_ACCESS_KEY}
@@ -15,7 +14,7 @@ services:
       - "9000:9000"
       - "9001:9001"
     volumes:
-      - rustfs-dev-data:/data
+      - rustfs-data:/data
       - ./certs:/opt/tls:ro
     restart: unless-stopped
 
@@ -29,7 +28,7 @@ services:
     ports:
       - "5002:1433"
     volumes:
-      - sql-dev-data:/var/opt/mssql
+      - sql-data:/var/opt/mssql
     healthcheck:
       test:
         - CMD-SHELL
@@ -40,6 +39,65 @@ services:
       start_period: 30s
     restart: unless-stopped
 
+  api:
+    build:
+      context: ./Api
+      dockerfile: Dockerfile
+    environment:
+      ASPNETCORE_URLS: "http://+:80"
+
+      ConnectionStrings__Default: "Server=db,1433;Database=imessagedb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True"
+
+      JwtSettings__Secret: ${JWT_SECRET}
+      JwtSettings__Issuer: ${JWT_ISSUER}
+      JwtSettings__Audience: ${JWT_AUDIENCE}
+      JwtSettings__ExpirationInMinutes: 5
+      JwtSettings__RefreshTokenExpirationInDays: 7
+
+      ObjectStorage__Endpoint: ${OBJECT_STORAGE_ENDPOINT}
+      ObjectStorage__AttachmentsBucket: ${OBJECT_STORAGE_ATTACHMENTS_BUCKET}
+      ObjectStorage__Region: ${OBJECT_STORAGE_REGION}
+      ObjectStorage__MaxFileSizeBytes: ${OBJECT_STORAGE_MAX_FILE_SIZE_BYTES}
+      ObjectStorage__AccessKey: ${OBJECT_STORAGE_ACCESS_KEY}
+      ObjectStorage__SecretKey: ${OBJECT_STORAGE_SECRET_KEY}
+      ObjectStorage__DownloadUrlExpirationMinutes: ${OBJECT_STORAGE_DOWNLOAD_URL_EXPIRATION_MINUTES}
+      
+      OtpSettings__Secret: ${OTP_SECRET}
+      OtpSettings__OtpLength: ${OTP_LENGTH}
+      OtpSettings__ExpirationMinutes: ${OTP_EXPIRATION_MINUTES}
+      OtpSettings__MaxFailedAttempts: ${OTP_MAX_FAILED_ATTEMPTS}
+
+      EmailSettings__Username: ${EMAIL_USERNAME}
+      EmailSettings__Server: ${EMAIL_SERVER}
+      EmailSettings__Port: 587
+      EmailSettings__SenderName: ${EMAIL_SENDER_NAME}
+      EmailSettings__SenderEmail: ${EMAIL_SENDER_EMAIL}
+      EmailSettings__Password: ${EMAIL_PASSWORD}
+      EmailSettings__UseTls: true
+
+      AngularClient: https://localhost:4200
+
+    depends_on:
+      db:
+        condition: service_healthy
+      rustfs:
+        condition: service_started
+
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "4200:443"
+    volumes:
+      - ./certs/localhost.pem:/etc/nginx/certs/fullchain.pem:ro
+      - ./certs/localhost-key.pem:/etc/nginx/certs/privkey.pem:ro
+    depends_on:
+      - api
+    restart: unless-stopped
+
 volumes:
-  sql-dev-data:
-  rustfs-dev-data:
+  sql-data:
+  rustfs-data:

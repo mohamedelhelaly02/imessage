@@ -3,17 +3,18 @@ services:
     image: rustfs/rustfs:1.0.3
     container_name: imessage-rustfs
     environment:
-      RUSTFS_ADDRESS: ":9000"
-      RUSTFS_CONSOLE_ADDRESS: ":9001"
-      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ADDRESS: "0.0.0.0:9000"
+      RUSTFS_CONSOLE_ADDRESS: "0.0.0.0:9001"
+      RUSTFS_CONSOLE_ENABLE: "false"
       RUSTFS_VOLUMES: "/data"
+      RUSTFS_TLS_PATH: "/opt/tls"
       RUSTFS_ACCESS_KEY: ${OBJECT_STORAGE_ACCESS_KEY}
       RUSTFS_SECRET_KEY: ${OBJECT_STORAGE_SECRET_KEY}
     ports:
       - "9000:9000"
-      - "9001:9001"
     volumes:
       - rustfs-data:/data
+      - ./certs:/opt/tls:ro
     restart: unless-stopped
 
   db:
@@ -21,10 +22,8 @@ services:
     container_name: imessage-db
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_PID: Developer
+      MSSQL_PID: ${MSSQL_PID:?Set MSSQL_PID to a licensed SQL Server edition}
       MSSQL_SA_PASSWORD: ${SA_PASSWORD}
-    ports:
-      - "1433:1433"
     volumes:
       - sql-data:/var/opt/mssql
     healthcheck:
@@ -33,6 +32,7 @@ services:
       timeout: 5s
       retries: 15
       start_period: 30s
+    restart: unless-stopped
 
   api:
     build:
@@ -40,11 +40,9 @@ services:
       dockerfile: Dockerfile
     container_name: imessage-api
     environment:
-      ASPNETCORE_URLS: "http://+:80;https://+:443"
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__Default: "Server=db,1433;Database=iMessage;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True"
-
-      ASPNETCORE_Kestrel__Certificates__Default__Path: /https/localhost.pem
-      ASPNETCORE_Kestrel__Certificates__Default__KeyPath: /https/localhost-key.pem
 
       JwtSettings__Secret: ${JWT_SECRET}
       JwtSettings__Issuer: ${JWT_ISSUER}
@@ -52,11 +50,12 @@ services:
       JwtSettings__ExpirationInMinutes: 5
       JwtSettings__RefreshTokenExpirationInDays: 7
 
-      ObjectStorage__Endpoint: ${OBJECT_STORAGE_ENDPOINT}
+      ObjectStorage__Endpoint: ${OBJECT_STORAGE_ENDPOINT:?Set the public HTTPS object storage endpoint}
       ObjectStorage__AttachmentsBucket: ${OBJECT_STORAGE_ATTACHMENTS_BUCKET}
       ObjectStorage__Region: ${OBJECT_STORAGE_REGION}
       ObjectStorage__MaxFileSizeBytes: ${OBJECT_STORAGE_MAX_FILE_SIZE_BYTES}
       ObjectStorage__DownloadUrlExpirationMinutes: ${OBJECT_STORAGE_DOWNLOAD_URL_EXPIRATION_MINUTES}
+      OtpSettings__Secret: ${OTP_SECRET:?Set a unique OTP_SECRET}
 
 
       EmailSettings__Username: ${EMAIL_USERNAME}
@@ -67,19 +66,16 @@ services:
       EmailSettings__Password: ${EMAIL_PASSWORD}
       EmailSettings__UseTls: true
 
-      AngularClient: https://localhost:4200
+      AngularClient: ${PUBLIC_WEB_ORIGIN:?Set PUBLIC_WEB_ORIGIN to the public https origin}
 
-    volumes:
-      - ./certs/localhost.pem:/https/localhost.pem:ro
-      - ./certs/localhost-key.pem:/https/localhost-key.pem:ro
-
-    ports:
-      - "7005:443"
+    expose:
+      - "8080"
     depends_on:
       db:
         condition: service_healthy
       rustfs:
         condition: service_started
+    restart: unless-stopped
 
   web:
     build:
@@ -87,10 +83,11 @@ services:
       dockerfile: Dockerfile
     container_name: imessage-web
     ports:
-      - "5000:80"
-      - "4200:443"
+      - "80:80"
+      - "443:443"
     volumes:
-      - ./certs:/etc/nginx/certs:ro
+      - ./certs/fullchain.pem:/etc/nginx/certs/fullchain.pem:ro
+      - ./certs/privkey.pem:/etc/nginx/certs/privkey.pem:ro
     depends_on:
       - api
     restart: unless-stopped

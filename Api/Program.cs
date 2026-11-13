@@ -206,8 +206,6 @@ builder.Services.AddOptions<OtpSettings>()
 
 WebApplication app = builder.Build();
 
-//await DbInitializer.SeedAsync(app.Services);
-
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
