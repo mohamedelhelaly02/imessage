@@ -90,7 +90,7 @@ services:
       context: ./web
       dockerfile: Dockerfile
     ports:
-      - "4200:443"
+      - "3000:443"
     volumes:
       - ./certs/localhost.pem:/etc/nginx/certs/fullchain.pem:ro
       - ./certs/localhost-key.pem:/etc/nginx/certs/privkey.pem:ro
