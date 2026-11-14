@@ -1,7 +1,7 @@
 services:
   rustfs:
     image: rustfs/rustfs:1.0.3
-    container_name: imessage-rustfs
+    container_name: rustfs
     environment:
       RUSTFS_ADDRESS: ":9000"
       RUSTFS_CONSOLE_ADDRESS: ":9001"
@@ -20,7 +20,7 @@ services:
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: imessage-db
+    container_name: database
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Developer
@@ -40,6 +40,7 @@ services:
     restart: unless-stopped
 
   api:
+    container_name: api
     build:
       context: ./Api
       dockerfile: Dockerfile
@@ -55,6 +56,7 @@ services:
       JwtSettings__RefreshTokenExpirationInDays: 7
 
       ObjectStorage__Endpoint: ${OBJECT_STORAGE_ENDPOINT}
+      ObjectStorage__PublicEndpoint: ${OBJECT_STORAGE_PUBLIC_ENDPOINT:-https://localhost:9000}
       ObjectStorage__AttachmentsBucket: ${OBJECT_STORAGE_ATTACHMENTS_BUCKET}
       ObjectStorage__Region: ${OBJECT_STORAGE_REGION}
       ObjectStorage__MaxFileSizeBytes: ${OBJECT_STORAGE_MAX_FILE_SIZE_BYTES}
@@ -75,7 +77,13 @@ services:
       EmailSettings__Password: ${EMAIL_PASSWORD}
       EmailSettings__UseTls: true
 
-      AngularClient: https://localhost:4200
+      AngularClient: https://localhost:3000
+
+    volumes:
+      - ./certs/rootCA.pem:/usr/local/share/ca-certificates/mkcert-rootCA.crt:ro
+
+    entrypoint: []
+    command: ["/bin/sh", "-c", "update-ca-certificates && exec dotnet Api.dll"]
 
     depends_on:
       db:
@@ -86,6 +94,7 @@ services:
     restart: unless-stopped
 
   web:
+    container_name: web
     build:
       context: ./web
       dockerfile: Dockerfile

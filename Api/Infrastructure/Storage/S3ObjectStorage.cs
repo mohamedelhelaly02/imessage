@@ -5,7 +5,9 @@ using System.Net;
 
 namespace Api.Infrastructure.Storage;
 
-public sealed class S3ObjectStorage(IAmazonS3 amazonS3) : IObjectStorage
+public sealed class S3ObjectStorage(
+    IAmazonS3 amazonS3,
+    [FromKeyedServices("public")] IAmazonS3 publicAmazonS3) : IObjectStorage
 {
     public async Task<string> CreateDownloadUrlAsync(string bucket, string objectKey, int expirationMinutes)
     {
@@ -22,7 +24,7 @@ public sealed class S3ObjectStorage(IAmazonS3 amazonS3) : IObjectStorage
             Verb = HttpVerb.GET
         };
 
-        return await amazonS3.GetPreSignedURLAsync(request);
+        return await publicAmazonS3.GetPreSignedURLAsync(request);
     }
 
     public async Task<long?> GetObjectSizeAsync(string bucket, string objectKey, CancellationToken cancellationToken = default)

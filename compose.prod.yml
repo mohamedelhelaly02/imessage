@@ -36,8 +36,8 @@ services:
 
   api:
     build:
-      context: ./Api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Api/Dockerfile
     container_name: imessage-api
     environment:
       ASPNETCORE_ENVIRONMENT: Production
@@ -50,7 +50,8 @@ services:
       JwtSettings__ExpirationInMinutes: 5
       JwtSettings__RefreshTokenExpirationInDays: 7
 
-      ObjectStorage__Endpoint: ${OBJECT_STORAGE_ENDPOINT:?Set the public HTTPS object storage endpoint}
+      ObjectStorage__Endpoint: ${OBJECT_STORAGE_ENDPOINT:?Set the internal object storage endpoint}
+      ObjectStorage__PublicEndpoint: ${OBJECT_STORAGE_PUBLIC_ENDPOINT:-}
       ObjectStorage__AttachmentsBucket: ${OBJECT_STORAGE_ATTACHMENTS_BUCKET}
       ObjectStorage__Region: ${OBJECT_STORAGE_REGION}
       ObjectStorage__MaxFileSizeBytes: ${OBJECT_STORAGE_MAX_FILE_SIZE_BYTES}

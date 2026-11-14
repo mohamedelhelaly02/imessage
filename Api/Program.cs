@@ -182,6 +182,24 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
     return new AmazonS3Client(credentials, config);
 });
 
+builder.Services.AddKeyedSingleton<IAmazonS3>("public", (sp, _) =>
+{
+    var options = sp.GetRequiredService<IOptions<ObjectStorageSettings>>().Value;
+    var endpoint = string.IsNullOrWhiteSpace(options.PublicEndpoint)
+        ? options.Endpoint
+        : options.PublicEndpoint;
+
+    var credentials = new BasicAWSCredentials(options.AccessKey, options.SecretKey);
+    var config = new AmazonS3Config
+    {
+        ServiceURL = endpoint,
+        ForcePathStyle = true,
+        AuthenticationRegion = options.Region
+    };
+
+    return new AmazonS3Client(credentials, config);
+});
+
 builder.Services.AddScoped<IObjectStorage, S3ObjectStorage>();
 
 builder.Services.AddScoped<IMessageNotifier, SignalRMessageNotifier>();
