@@ -1,0 +1,79 @@
+name: Deploy API
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-api:
+    name: Deploy API to MonsterASP
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    env:
+      DB_HOST_PUBLIC: db82666.public.databaseasp.net
+      DB_HOST_LOCAL: db82666.databaseasp.net
+      DB_NAME: db82666
+      DB_USER: db82666
+      DB_PASSWORD: ${{ secrets.MONSTER_DB_PASSWORD }}
+      JwtSettings__Secret: ${{ secrets.JWT_SECRET }}
+      JwtSettings__Issuer: imessage-api
+      JwtSettings__Audience: imessage-web
+      OtpSettings__Secret: ${{ secrets.OTP_SECRET }}
+      AngularClient: https://imessage-web-me.pages.dev
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Publish API
+        run: dotnet publish Api/Api.csproj -c Release -o publish
+
+      - name: Write production settings (not committed)
+        run: |
+          jq -n \
+            --arg conn "Server=$DB_HOST_LOCAL;Database=$DB_NAME;User Id=$DB_USER;Password=$DB_PASSWORD;Encrypt=False;MultipleActiveResultSets=True;" \
+            --arg jwt "$JwtSettings__Secret" \
+            --arg otp "$OtpSettings__Secret" \
+            --arg web "$AngularClient" \
+            '{
+              ConnectionStrings: { Default: $conn },
+              JwtSettings: { Secret: $jwt, Issuer: "imessage-api", Audience: "imessage-web", ExpirationInMinutes: 5, RefreshTokenExpirationInDays: 7 },
+              OtpSettings: { Secret: $otp, OtpLength: 6, ExpirationMinutes: 10, MaxFailedAttempts: 5 },
+              AngularClient: $web,
+              ObjectStorage: { Endpoint: "https://storage.invalid", AccessKey: "placeholder", SecretKey: "placeholder", AttachmentsBucket: "placeholder", Region: "us-east-1" },
+              EmailSettings: { Server: "", Port: 587, Username: "", Password: "", SenderName: "iMessage", SenderEmail: "", UseTls: true }
+            }' > publish/appsettings.Production.json
+
+      - name: Apply database migrations
+        env:
+          ObjectStorage__Endpoint: https://storage.invalid
+          ObjectStorage__AccessKey: placeholder
+          ObjectStorage__SecretKey: placeholder
+          ObjectStorage__AttachmentsBucket: placeholder
+          OtpSettings__OtpLength: "6"
+          OtpSettings__ExpirationMinutes: "10"
+          OtpSettings__MaxFailedAttempts: "5"
+          JwtSettings__ExpirationInMinutes: "5"
+          JwtSettings__RefreshTokenExpirationInDays: "7"
+        run: |
+          dotnet tool install --global dotnet-ef
+          export PATH="$PATH:$HOME/.dotnet/tools"
+          dotnet ef database update --project Api \
+            --connection "Server=$DB_HOST_PUBLIC,1433;Database=$DB_NAME;User Id=$DB_USER;Password=$DB_PASSWORD;Encrypt=True;TrustServerCertificate=True;"
+
+      - name: Upload to MonsterASP (FTPS)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: site111164.siteasp.net
+          username: site111164
+          password: ${{ secrets.MONSTER_FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./publish/
+          server-dir: /wwwroot/
