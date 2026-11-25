@@ -19,13 +19,13 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Restore
-        run: dotnet restore Api/Api.csproj
+        run: dotnet restore Api.Tests/Api.Tests.csproj
 
       - name: Build
-        run: dotnet build Api/Api.csproj --no-restore -c Release
+        run: dotnet build Api.Tests/Api.Tests.csproj --no-restore -c Release
 
       - name: Test
-        run: dotnet test Api/Api.csproj --no-build -c Release --verbosity normal
+        run: dotnet test Api.Tests/Api.Tests.csproj --no-build -c Release --verbosity normal
 
       - name: Docker build (no push)
         run: docker build -t imessage-api:ci Api
@@ -86,3 +86,4 @@ jobs:
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/imessage-web:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/imessage-web:${{ github.sha }}
+
