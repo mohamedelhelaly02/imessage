@@ -23,6 +23,8 @@ jobs:
       JwtSettings__Audience: imessage-web
       S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
       S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
+      EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       OtpSettings__Secret: ${{ secrets.OTP_SECRET }}
       AngularClient: https://playful-marigold-12a55a.netlify.app
     steps:
@@ -43,14 +45,14 @@ jobs:
             --arg conn "Server=$DB_HOST_LOCAL;Database=$DB_NAME;User Id=$DB_USER;Password=$DB_PASSWORD;Encrypt=False;MultipleActiveResultSets=True;" \
             --arg jwt "$JwtSettings__Secret" \
             --arg otp "$OtpSettings__Secret" \
-            --arg web "$AngularClient" --arg s3a "$S3_ACCESS_KEY" --arg s3s "$S3_SECRET_KEY" \
+            --arg web "$AngularClient" --arg s3a "$S3_ACCESS_KEY" --arg s3s "$S3_SECRET_KEY" --arg eu "$EMAIL_USERNAME" --arg ep "$EMAIL_PASSWORD" \
             '{
               ConnectionStrings: { Default: $conn },
               JwtSettings: { Secret: $jwt, Issuer: "imessage-api", Audience: "imessage-web", ExpirationInMinutes: 5, RefreshTokenExpirationInDays: 7 },
               OtpSettings: { Secret: $otp, OtpLength: 6, ExpirationMinutes: 10, MaxFailedAttempts: 5 },
               AngularClient: $web,
               ObjectStorage: { Endpoint: "https://t3.storage.dev", PublicEndpoint: "https://t3.storage.dev", AccessKey: $s3a, SecretKey: $s3s, AttachmentsBucket: "imessage-me-files-7k2", Region: "auto" },
-              EmailSettings: { Server: "", Port: 587, Username: "", Password: "", SenderName: "iMessage", SenderEmail: "", UseTls: true }
+              EmailSettings: { Server: "smtp.gmail.com", Port: 587, Username: $eu, Password: $ep, SenderName: "iMessage", SenderEmail: $eu, UseTls: true }
             }' > publish/appsettings.Production.json
 
       - name: Apply database migrations
@@ -75,7 +77,7 @@ jobs:
           FTP_PASS: ${{ secrets.MONSTER_FTP_PASSWORD }}
         run: |
           echo "<html><body>Updating, back in a minute.</body></html>" > app_offline.htm
-          curl --ssl-reqd --silent --show-error --ftp-create-dirs -u "site111164:$FTP_PASS" -T app_offline.htm ftp://site111164.siteasp.net/wwwroot/app_offline.htm || echo "offline step skipped"
+          curl --ssl-reqd --insecure --silent --show-error --ftp-create-dirs -u "site111164:$FTP_PASS" -T app_offline.htm ftp://site111164.siteasp.net/wwwroot/app_offline.htm || echo "offline step skipped"
           sleep 8
 
       - name: Upload to MonsterASP (FTPS)
@@ -93,4 +95,4 @@ jobs:
         env:
           FTP_PASS: ${{ secrets.MONSTER_FTP_PASSWORD }}
         run: |
-          curl --ssl-reqd --silent --show-error -u "site111164:$FTP_PASS" ftp://site111164.siteasp.net/ -Q "DELE /wwwroot/app_offline.htm" || echo "nothing to delete"
+          curl --ssl-reqd --insecure --silent --show-error -u "site111164:$FTP_PASS" ftp://site111164.siteasp.net/ -Q "DELE /wwwroot/app_offline.htm" || echo "nothing to delete"
