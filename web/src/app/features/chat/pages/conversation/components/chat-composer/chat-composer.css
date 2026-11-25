@@ -144,3 +144,10 @@
         padding-inline: 10px;
     }
 }
+
+
+@media (max-width: 600px) {
+    .composer-input-wrapper { min-width: 0; flex: 1 1 150px; }
+    .composer-textarea { min-width: 0; font-size: 16px; }
+    .composer-action-btn { width: 32px; height: 32px; }
+}
