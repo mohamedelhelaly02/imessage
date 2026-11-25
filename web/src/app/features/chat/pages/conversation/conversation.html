@@ -1,6 +1,7 @@
 <main class="main-chat">
   <app-chat-header
     [participants]="getTypingParticipants()"
+    [recordingCount]="recordingCount()"
     [conversation]="selectedConversation()"
   ></app-chat-header>
   <div class="message-toolbar">
@@ -32,6 +33,7 @@
     [disabled]="isLoading()"
     (onClearReply)="clearReply()"
     (onTyping)="onUserTyping()"
+    (onRecordingChange)="onRecordingChange($event)"
     (onMessageSend)="onMessageChanged($event)"
     (onFileSelected)="onFileSelected($event)"
     (onVoiceMessage)="onVoiceMessage($event)"
