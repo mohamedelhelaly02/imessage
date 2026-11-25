@@ -25,6 +25,8 @@ internal sealed class ChatHub(
             if (string.IsNullOrEmpty(userId))
                 return;
 
+            Context.Items["uid"] = userId;
+
             await Groups.AddToGroupAsync(Context.ConnectionId, GetGroupName(userId));
 
             var isFirstConnection = connectionTracker.AddConnection(userId, Context.ConnectionId);
@@ -49,7 +51,6 @@ internal sealed class ChatHub(
                 u.Id,
                 u.DisplayName,
                 u.UserName,
-                u.Email,
                 u.ProfilePictureUrl,
                 u.LastSeenAtUtc
             })
@@ -60,14 +61,24 @@ internal sealed class ChatHub(
 
         var relatedUserIds = await GetRelatedParticipantsOf(userId);
 
+        if (relatedUserIds.Count == 0)
+            return;
+
         var eventName = isOnline ? "UserOnline" : "UserOffline";
 
-        if (relatedUserIds?.Count > 0)
+        // Email is intentionally not sent to other users. The empty value keeps the payload shape.
+        var payload = new
         {
-            foreach (var id in relatedUserIds)
-                await Clients.Group(GetGroupName(id)).SendAsync(eventName, user);
-        }
+            user.Id,
+            user.DisplayName,
+            user.UserName,
+            Email = string.Empty,
+            user.ProfilePictureUrl,
+            user.LastSeenAtUtc
+        };
 
+        await Clients.Groups(relatedUserIds.Select(GetGroupName).ToList())
+            .SendAsync(eventName, payload);
     }
 
     private static string GetGroupName(string userId)
@@ -77,7 +88,7 @@ internal sealed class ChatHub(
     {
         try
         {
-            var userId = currentUser.Id;
+            var userId = Context.Items["uid"] as string;
 
             if (string.IsNullOrWhiteSpace(userId))
             {
@@ -93,16 +104,19 @@ internal sealed class ChatHub(
                 return;
             }
 
-            var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-
-            if (user is not null)
+            try
             {
-                await dbContext.Users.ExecuteUpdateAsync(
-                    s => s.SetProperty(
+                await dbContext.Users
+                    .Where(u => u.Id == userId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(
                         u => u.LastSeenAtUtc, DateTime.UtcNow));
-            }
 
-            await NotifyRelatedUsersStatus(userId, isOnline: false);
+                await NotifyRelatedUsersStatus(userId, isOnline: false);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to publish offline status for user {UserId}", userId);
+            }
         }
         finally
         {
@@ -117,10 +131,21 @@ internal sealed class ChatHub(
 
     public async Task GetOnlineStatus(IEnumerable<string> userIds)
     {
+        var callerId = currentUser.Id;
+
+        if (string.IsNullOrWhiteSpace(callerId))
+        {
+            return;
+        }
+
+        // Only users who share a conversation with the caller (and the caller) can be queried.
+        var allowedUserIds = await GetRelatedParticipantsOf(callerId);
+        allowedUserIds.Add(callerId);
+
         var requestedUserIds = userIds?
-               .Where(id => !string.IsNullOrWhiteSpace(id))
-               .Distinct()
-               .ToList();
+            .Where(id => !string.IsNullOrWhiteSpace(id) && allowedUserIds.Contains(id))
+            .Distinct()
+            .ToList();
 
         if (requestedUserIds is null || requestedUserIds.Count == 0)
         {
@@ -135,14 +160,24 @@ internal sealed class ChatHub(
                 user.Id,
                 user.DisplayName,
                 user.UserName,
-                user.Email,
                 user.ProfilePictureUrl,
                 user.LastSeenAtUtc
             })
             .ToListAsync();
 
-        var onlineStatuses = users
-            .ConvertAll(user => new { user, isOnline = connectionTracker.IsOnline(user.Id) });
+        var onlineStatuses = users.ConvertAll(u => new
+        {
+            user = new
+            {
+                u.Id,
+                u.DisplayName,
+                u.UserName,
+                Email = string.Empty,
+                u.ProfilePictureUrl,
+                u.LastSeenAtUtc
+            },
+            isOnline = connectionTracker.IsOnline(u.Id)
+        });
 
         await Clients.Caller.SendAsync("OnlineStatus", onlineStatuses);
     }
@@ -207,18 +242,17 @@ internal sealed class ChatHub(
             throw new HubException("You are not participant in this conversation");
         }
 
-        var relatedUserIds = await GetRelatedParticipantsOf(userId);
+        var participantIds = await dbContext.Participants
+            .AsNoTracking()
+            .Where(p => p.ConversationId == conversationId && p.UserId != userId)
+            .Select(p => p.UserId)
+            .ToListAsync();
 
-        if (relatedUserIds?.Count > 0)
+        if (participantIds.Count > 0)
         {
-            foreach (var id in relatedUserIds)
-            {
-                await Clients.Group(GetGroupName(id))
-                    .SendAsync("ConversationStartedTyping", conversationId);
-            }
-
+            await Clients.Groups(participantIds.Select(GetGroupName).ToList())
+                .SendAsync("ConversationStartedTyping", conversationId);
         }
-
     }
 
     private async Task<List<string>> GetRelatedParticipantsOf(string userId)
@@ -261,16 +295,16 @@ internal sealed class ChatHub(
             throw new HubException("You are not participant in this conversation");
         }
 
-        var relatedUserIds = await GetRelatedParticipantsOf(userId);
+        var participantIds = await dbContext.Participants
+            .AsNoTracking()
+            .Where(p => p.ConversationId == conversationId && p.UserId != userId)
+            .Select(p => p.UserId)
+            .ToListAsync();
 
-        if (relatedUserIds?.Count > 0)
+        if (participantIds.Count > 0)
         {
-            foreach (var id in relatedUserIds)
-            {
-                await Clients.Group(GetGroupName(id))
-                    .SendAsync("ConversationStoppedTyping", conversationId);
-            }
-
+            await Clients.Groups(participantIds.Select(GetGroupName).ToList())
+                .SendAsync("ConversationStoppedTyping", conversationId);
         }
     }
 
