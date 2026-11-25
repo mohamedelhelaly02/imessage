@@ -22,7 +22,7 @@ jobs:
       JwtSettings__Issuer: imessage-api
       JwtSettings__Audience: imessage-web
       OtpSettings__Secret: ${{ secrets.OTP_SECRET }}
-      AngularClient: https://imessage-web-me.pages.dev
+      AngularClient: https://playful-marigold-12a55a.netlify.app
     steps:
       - uses: actions/checkout@v4
         with:
