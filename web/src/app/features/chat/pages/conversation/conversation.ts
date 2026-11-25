@@ -20,6 +20,7 @@ export class Conversation implements OnDestroy {
   private readonly authStore = inject(AuthStore);
   private readonly destroyRef = inject(DestroyRef);
   private readonly conversationStore = inject(ConversationStore);
+  readonly sendingVoice = signal(false);
   private typingTimeout?: ReturnType<typeof setTimeout>;
 
   readonly currentUserId = computed(() => this.authStore.user()?.id ?? '');
@@ -132,9 +133,13 @@ export class Conversation implements OnDestroy {
   }
 
   onVoiceMessage(blob: Blob): void {
-    console.log('Received voice message blob:', blob);
-    const file = new File([blob], `voice-${Date.now()}.webm`, { type: 'audio/webm' });
-    this.sendFile(file, 'VoiceNote');
+    const supported = ['audio/webm', 'audio/mp4', 'audio/ogg', 'audio/mpeg', 'audio/wav', 'audio/aac'];
+    const base = (blob.type || '').split(';')[0].toLowerCase();
+    const mime = supported.includes(base) ? base : 'audio/webm';
+    const extension = mime === 'audio/mp4' ? 'm4a' : mime.split('/')[1];
+    const file = new File([blob], `voice-${Date.now()}.${extension}`, { type: mime });
+    this.sendingVoice.set(true);
+    this.sendFile(file, 'VoiceNote', () => this.sendingVoice.set(false));
   }
 
   onLocationShare(location: { latitude: number; longitude: number }) {
@@ -254,17 +259,24 @@ export class Conversation implements OnDestroy {
     this.conversationStore.resetState();
   }
 
-  private async sendFile(file: File, type: MessageType): Promise<void> {
+  private async sendFile(file: File, type: MessageType, onDone?: () => void): Promise<void> {
     const conversationId = this.activeConversationId();
-    if (!conversationId) return;
+    if (!conversationId) {
+      onDone?.();
+      return;
+    }
     const replyToMessageId = this.replyMessage()?.id ?? null;
 
     this.conversationStore
       .uploadAttachment(conversationId, type, file)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe((upload) =>
-        this.send({ type, attachmentUploadIds: [upload.uploadId] }, replyToMessageId),
-      );
+      .subscribe({
+        next: (upload) => {
+          this.send({ type, attachmentUploadIds: [upload.uploadId] }, replyToMessageId);
+          onDone?.();
+        },
+        error: () => onDone?.(),
+      });
   }
 
   private send(
