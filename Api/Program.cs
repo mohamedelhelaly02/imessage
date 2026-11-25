@@ -145,14 +145,15 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddSignalR();
 
-var redisHost = builder.Configuration["Redis:Host"];
-var redisPassword = builder.Configuration["Redis:Password"];
-
-if (string.IsNullOrWhiteSpace(redisHost) || string.IsNullOrWhiteSpace(redisPassword))
-    throw new InvalidOperationException("Redis:Host and Redis:Password must be configured.");
-
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
-    ConnectionMultiplexer.Connect(new ConfigurationOptions
+{
+    var redisHost = builder.Configuration["Redis:Host"];
+    var redisPassword = builder.Configuration["Redis:Password"];
+
+    if (string.IsNullOrWhiteSpace(redisHost) || string.IsNullOrWhiteSpace(redisPassword))
+        throw new InvalidOperationException("Redis:Host and Redis:Password must be configured.");
+
+    return ConnectionMultiplexer.Connect(new ConfigurationOptions
     {
         EndPoints = { $"{redisHost}:6379" },
         Password = redisPassword,
@@ -161,7 +162,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
         ConnectTimeout = 5000,
         SyncTimeout = 3000,
         AsyncTimeout = 3000
-    }));
+    });
+});
 builder.Services.AddSingleton<IConnectionTracker, RedisConnectionTracker>();
 
 builder.Services
