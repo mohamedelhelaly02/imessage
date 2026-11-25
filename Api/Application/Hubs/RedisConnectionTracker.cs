@@ -4,8 +4,9 @@ using StackExchange.Redis;
 namespace Api.Application.Hubs;
 
 /// <summary>
-/// Presence tracking in Redis. Each user has a set of connection ids under "presence:{userId}".
-/// If Redis is unreachable the in-memory tracker is used so the chat keeps working.
+/// Connection tracking in Redis. Each user has a set of connection ids under "presence:{userId}".
+/// Every method catches Redis errors and only logs them: when Redis is unreachable the chat keeps
+/// working, but online status is not updated (users read as offline) until Redis is back.
 /// </summary>
 internal sealed class RedisConnectionTracker : IConnectionTracker
 {
@@ -24,93 +25,68 @@ internal sealed class RedisConnectionTracker : IConnectionTracker
         "return 0";
 
     private readonly IConnectionMultiplexer _redis;
-    private readonly ConnectionTracker _fallback;
     private readonly ILogger<RedisConnectionTracker> _logger;
 
-    public RedisConnectionTracker(
-        IConnectionMultiplexer redis,
-        ConnectionTracker fallback,
-        ILogger<RedisConnectionTracker> logger)
+    public RedisConnectionTracker(IConnectionMultiplexer redis, ILogger<RedisConnectionTracker> logger)
     {
         _redis = redis;
-        _fallback = fallback;
         _logger = logger;
 
         ClearStalePresence();
     }
 
-    public bool AddConnection(string userId, string connectionId)
+    public async Task<bool> AddConnectionAsync(string userId, string connectionId)
     {
         try
         {
-            var result = (long)_redis.GetDatabase().ScriptEvaluate(
+            var count = (long)await _redis.GetDatabase().ScriptEvaluateAsync(
                 AddScript,
-                new RedisKey[] { KeyFor(userId) },
-                new RedisValue[] { connectionId, TtlSeconds });
+                [KeyFor(userId)],
+                [connectionId, TtlSeconds]);
 
-            return result == 1;
+            return count == 1;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Redis presence unavailable, using in-memory tracker (add).");
-            return _fallback.AddConnection(userId, connectionId);
+            _logger.LogWarning(ex, "Redis unavailable, could not track connection for user {UserId}.", userId);
+            return false;
         }
     }
 
-    public bool RemoveConnection(string userId, string connectionId)
+    public async Task<bool> RemoveConnectionAsync(string userId, string connectionId)
     {
-        var fallbackWasLast = _fallback.RemoveConnection(userId, connectionId);
-
         try
         {
-            var result = (long)_redis.GetDatabase().ScriptEvaluate(
+            var wasLast = (long)await _redis.GetDatabase().ScriptEvaluateAsync(
                 RemoveScript,
-                new RedisKey[] { KeyFor(userId) },
-                new RedisValue[] { connectionId });
+                [KeyFor(userId)],
+                [connectionId]);
 
-            return result == 1 || fallbackWasLast;
+            return wasLast == 1;
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Redis presence unavailable, using in-memory tracker (remove).");
-            return fallbackWasLast;
+            _logger.LogWarning(ex, "Redis unavailable, could not untrack connection for user {UserId}.", userId);
+            return false;
         }
     }
 
-    public bool IsOnline(string userId)
+    public async Task<IReadOnlySet<string>> GetOnlineUsersAsync(IEnumerable<string> userIds)
     {
-        try
-        {
-            if (_redis.GetDatabase().KeyExists(KeyFor(userId)))
-            {
-                return true;
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Redis presence unavailable, using in-memory tracker (read).");
-        }
-
-        return _fallback.IsOnline(userId);
-    }
-
-    public IReadOnlyCollection<string> GetOnlineUserIds()
-    {
-        var ids = new HashSet<string>(_fallback.GetOnlineUserIds());
+        var ids = userIds.Distinct().ToList();
 
         try
         {
-            foreach (var key in ScanPresenceKeys())
-            {
-                ids.Add(key.ToString()[KeyPrefix.Length..]);
-            }
+            var db = _redis.GetDatabase();
+            var checks = await Task.WhenAll(ids.Select(id => db.KeyExistsAsync(KeyFor(id))));
+
+            return ids.Where((_, index) => checks[index]).ToHashSet();
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Redis presence unavailable, returning in-memory users only.");
+            _logger.LogWarning(ex, "Redis unavailable, reporting users as offline.");
+            return new HashSet<string>();
         }
-
-        return [.. ids];
     }
 
     // The API runs as a single instance. After a restart every old connection is gone,
@@ -121,27 +97,17 @@ internal sealed class RedisConnectionTracker : IConnectionTracker
         {
             var db = _redis.GetDatabase();
 
-            foreach (var key in ScanPresenceKeys())
+            foreach (var endpoint in _redis.GetEndPoints())
             {
-                db.KeyDelete(key);
+                foreach (var key in _redis.GetServer(endpoint).Keys(pattern: KeyPrefix + "*"))
+                {
+                    db.KeyDelete(key);
+                }
             }
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Could not clear stale presence keys.");
-        }
-    }
-
-    private IEnumerable<RedisKey> ScanPresenceKeys()
-    {
-        foreach (var endpoint in _redis.GetEndPoints())
-        {
-            var server = _redis.GetServer(endpoint);
-
-            foreach (var key in server.Keys(pattern: KeyPrefix + "*"))
-            {
-                yield return key;
-            }
         }
     }
 
