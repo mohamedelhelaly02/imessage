@@ -1,0 +1,24 @@
+[build]
+  base = "web"
+  command = "npm run build"
+  publish = "dist/web/browser"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+[[redirects]]
+  from = "/api/*"
+  to = "http://imessage-api-me.runasp.net/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/hubs/*"
+  to = "http://imessage-api-me.runasp.net/hubs/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
