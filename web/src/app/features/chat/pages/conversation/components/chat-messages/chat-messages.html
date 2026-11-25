@@ -49,12 +49,14 @@
               }
             }
             @case ('VoiceNote') {
+              <div class="voice-note">
               @for (file of message.attachments; track file.id) {
                 @if (getUrl(file.id); as url) {
                   <audio controls [src]="url"></audio>
                 }
               }
-              <small>Voice message</small>
+              <small class="voice-label">🎙 {{ 'CHAT.HEADER.VOICE_MESSAGE' | translate }}</small>
+              </div>
             }
             @case ('Document') {
               @for (file of message.attachments; track file.id) {
