@@ -12,6 +12,7 @@ export class ChatComposer {
   readonly disabled = input(false);
   readonly onClearReply = output<void>();
   readonly isRecording = signal(false);
+  readonly onRecordingChange = output<boolean>();
   readonly onTyping = output<void>();
   readonly onMessageSend = output<string>();
   readonly onFileSelected = output<File>();
@@ -79,11 +80,22 @@ export class ChatComposer {
       stream.getTracks().forEach(track => track.stop());
       if (audio.size) this.onVoiceMessage.emit(audio);
       this.isRecording.set(false);
+      this.onRecordingChange.emit(false);
     };
     this.recorder.start();
     this.isRecording.set(true);
+    this.onRecordingChange.emit(true);
   }
 
+  ngOnDestroy(): void {
+    // Leaving the chat while recording discards the clip.
+    if (this.recorder?.state === 'recording') {
+      const recorder = this.recorder;
+      recorder.onstop = null;
+      recorder.stream.getTracks().forEach(track => track.stop());
+      recorder.stop();
+    }
+  }
   shareLocation(): void {
     navigator.geolocation.getCurrentPosition(position => this.onLocationShare.emit({
       latitude: position.coords.latitude,
