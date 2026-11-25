@@ -32,7 +32,18 @@
         <h2 class="imessage-header-title">{{ getDisplayName(conv) }}</h2>
 
         <div class="imessage-header-status-row">
-          @if (participants().length > 0) {
+          @if (recordingCount() > 0) {
+            <span class="imessage-status-indicator imessage-status-typing">
+              @if (isGroup(conv) && recordingCount() > 1) {
+                {{ 'CHAT.HEADER.GROUP_RECORDING' | translate: { count: recordingCount() } }}
+              } @else {
+                {{ 'CHAT.HEADER.RECORDING' | translate }}
+              }
+              <span class="imessage-typing-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
+            </span>
+          } @else if (participants().length > 0) {
             <span class="imessage-status-indicator imessage-status-typing">
               @if (isGroup(conv) && participants().length > 1) {
                 {{ 'CHAT.HEADER.GROUP_TYPING' | translate: { count: participants().length } }}
