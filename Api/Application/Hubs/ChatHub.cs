@@ -95,6 +95,20 @@ internal sealed class ChatHub(
                 return;
             }
 
+            if (Context.Items["rec"] is HashSet<string> recording)
+            {
+                foreach (var conversationId in recording.ToList())
+                {
+                    try
+                    {
+                        await SetRecordingVoice(userId, conversationId, false);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Could not clear recording state for user {UserId}", userId);
+                    }
+                }
+            }
             var isLastConnection = connectionTracker.RemoveConnection(
                 userId,
                 Context.ConnectionId);
@@ -308,6 +322,56 @@ internal sealed class ChatHub(
         }
     }
 
+    public Task StartRecordingVoice(string conversationId)
+        => SetRecordingVoice(currentUser.Id, conversationId, true);
+
+    public Task StopRecordingVoice(string conversationId)
+        => SetRecordingVoice(currentUser.Id, conversationId, false);
+
+    private async Task SetRecordingVoice(string? userId, string conversationId, bool isRecording)
+    {
+        if (string.IsNullOrEmpty(userId))
+        {
+            return;
+        }
+
+        var participantIds = await dbContext.Participants
+            .AsNoTracking()
+            .Where(p => p.ConversationId == conversationId)
+            .Select(p => p.UserId)
+            .ToListAsync();
+
+        if (!participantIds.Contains(userId))
+        {
+            throw new HubException("You are not participant in this conversation");
+        }
+
+        if (Context.Items["rec"] is not HashSet<string> recording)
+        {
+            recording = [];
+            Context.Items["rec"] = recording;
+        }
+
+        if (isRecording)
+            recording.Add(conversationId);
+        else
+            recording.Remove(conversationId);
+
+        var otherGroups = participantIds
+            .Where(id => id != userId)
+            .Select(GetGroupName)
+            .ToList();
+
+        if (otherGroups.Count == 0)
+        {
+            return;
+        }
+
+        await Clients.Groups(otherGroups).SendAsync(
+            isRecording ? "UserRecordingVoice" : "UserStoppedRecordingVoice",
+            conversationId,
+            userId);
+    }
     public async Task StartTyping(string conversationId)
     {
         var userId = currentUser.Id;
