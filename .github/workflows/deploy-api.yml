@@ -21,6 +21,8 @@ jobs:
       JwtSettings__Secret: ${{ secrets.JWT_SECRET }}
       JwtSettings__Issuer: imessage-api
       JwtSettings__Audience: imessage-web
+      S3_ACCESS_KEY: ${{ secrets.S3_ACCESS_KEY }}
+      S3_SECRET_KEY: ${{ secrets.S3_SECRET_KEY }}
       OtpSettings__Secret: ${{ secrets.OTP_SECRET }}
       AngularClient: https://playful-marigold-12a55a.netlify.app
     steps:
@@ -41,13 +43,13 @@ jobs:
             --arg conn "Server=$DB_HOST_LOCAL;Database=$DB_NAME;User Id=$DB_USER;Password=$DB_PASSWORD;Encrypt=False;MultipleActiveResultSets=True;" \
             --arg jwt "$JwtSettings__Secret" \
             --arg otp "$OtpSettings__Secret" \
-            --arg web "$AngularClient" \
+            --arg web "$AngularClient" --arg s3a "$S3_ACCESS_KEY" --arg s3s "$S3_SECRET_KEY" \
             '{
               ConnectionStrings: { Default: $conn },
               JwtSettings: { Secret: $jwt, Issuer: "imessage-api", Audience: "imessage-web", ExpirationInMinutes: 5, RefreshTokenExpirationInDays: 7 },
               OtpSettings: { Secret: $otp, OtpLength: 6, ExpirationMinutes: 10, MaxFailedAttempts: 5 },
               AngularClient: $web,
-              ObjectStorage: { Endpoint: "https://storage.invalid", AccessKey: "placeholder", SecretKey: "placeholder", AttachmentsBucket: "placeholder", Region: "us-east-1" },
+              ObjectStorage: { Endpoint: "https://t3.storage.dev", PublicEndpoint: "https://t3.storage.dev", AccessKey: $s3a, SecretKey: $s3s, AttachmentsBucket: "imessage-me-files-7k2", Region: "auto" },
               EmailSettings: { Server: "", Port: 587, Username: "", Password: "", SenderName: "iMessage", SenderEmail: "", UseTls: true }
             }' > publish/appsettings.Production.json
 
