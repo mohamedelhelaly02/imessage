@@ -194,8 +194,12 @@ export class ConversationStore {
   }
 
   getAttachmentDownloadUrl(attachmentId: string): Observable<string> {
+    const cachedUrl = readCachedAttachmentUrl(attachmentId);
+    if (cachedUrl) return of(cachedUrl);
+
     return this._messagesApi.getAttachmentDownloadUrl(attachmentId).pipe(
       map((response) => response.downloadUrl),
+      tap((url) => cacheAttachmentUrl(attachmentId, url)),
       catchError((err) => {
         const message = err?.error?.detail || 'Unable to load attachment.';
         this._error.set(message);
@@ -393,5 +397,30 @@ export class ConversationStore {
     console.log('Resetting conversation store state...');
     this._selectedConversation.set(null);
     this._replyingTo.set(null);
+  }
+}
+
+
+const ATTACHMENT_URL_TTL_MS = 4 * 60 * 1000;
+
+function readCachedAttachmentUrl(attachmentId: string): string | null {
+  try {
+    const raw = sessionStorage.getItem('att-url:' + attachmentId);
+    if (!raw) return null;
+    const entry = JSON.parse(raw) as { u: string; e: number };
+    return entry.e > Date.now() ? entry.u : null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheAttachmentUrl(attachmentId: string, url: string): void {
+  try {
+    sessionStorage.setItem(
+      'att-url:' + attachmentId,
+      JSON.stringify({ u: url, e: Date.now() + ATTACHMENT_URL_TTL_MS }),
+    );
+  } catch {
+    // storage full or unavailable, skip caching
   }
 }
