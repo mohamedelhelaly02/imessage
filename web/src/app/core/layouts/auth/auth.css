@@ -283,3 +283,10 @@ app-footer {
         display: none;
     }
 }
+
+
+@media (max-width: 720px) {
+    .auth-intro__description, .auth-intro__features { display: none; }
+    .auth-intro__title { font-size: clamp(26px, 8vw, 34px); margin: 10px 0 0; }
+    .auth-shell__content { gap: 18px; padding-top: 18px; }
+}
