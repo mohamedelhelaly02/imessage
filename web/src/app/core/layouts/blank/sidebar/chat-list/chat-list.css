@@ -223,3 +223,7 @@
         transform: scale(1);
     }
 }
+
+.imessage-chat-top { gap: 8px; min-width: 0; }
+.imessage-chat-name { min-width: 0; }
+.imessage-chat-item { min-width: 0; max-width: 100%; box-sizing: border-box; }
