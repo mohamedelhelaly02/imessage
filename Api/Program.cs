@@ -10,6 +10,7 @@ using Api.Infrastructure.Identity;
 using Api.Infrastructure.Messaging;
 using Api.Infrastructure.Persistence;
 using Api.Infrastructure.Storage;
+using StackExchange.Redis;
 using Api.Shared;
 using Api.Shared.Extensions;
 using Api.Shared.Helpers;
@@ -144,7 +145,28 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddSignalR();
 
-builder.Services.AddSingleton<IConnectionTracker, ConnectionTracker>();
+var redisHost = builder.Configuration["Redis:Host"];
+var redisPassword = builder.Configuration["Redis:Password"];
+
+if (!string.IsNullOrWhiteSpace(redisHost) && !string.IsNullOrWhiteSpace(redisPassword))
+{
+    builder.Services.AddSingleton<ConnectionTracker>();
+    builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+        ConnectionMultiplexer.Connect(new ConfigurationOptions
+        {
+            EndPoints = { $"{redisHost}:6379" },
+            Password = redisPassword,
+            Ssl = true,
+            AbortOnConnectFail = false,
+            ConnectTimeout = 5000,
+            SyncTimeout = 3000
+        }));
+    builder.Services.AddSingleton<IConnectionTracker, RedisConnectionTracker>();
+}
+else
+{
+    builder.Services.AddSingleton<IConnectionTracker, ConnectionTracker>();
+}
 
 builder.Services
     .AddOptions<ObjectStorageSettings>()
