@@ -232,6 +232,7 @@
         },
         "LIST": {
             "TYPING": "typing",
+            "RECORDING": "recording a voice message",
             "LAST_ACTIVE": "Last active",
             "START_NOW": "Start the conversation now",
             "LAST_MESSAGE_SENT": "Last message sent"
@@ -239,6 +240,9 @@
         "HEADER": {
             "TYPING": "typing",
             "GROUP_TYPING": "{{count}} people are typing",
+            "RECORDING": "recording a voice message",
+            "GROUP_RECORDING": "{{count}} people are recording voice messages",
+            "VOICE_MESSAGE": "Voice message",
             "GROUP_SUBTITLE": "{{names}}",
             "GROUP_SUBTITLE_MORE": "{{names}} and {{count}} others",
             "ONLINE": "online",
