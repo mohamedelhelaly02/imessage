@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
-import { Observable } from 'rxjs';
+import { from, Observable, switchMap } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 
 export type MessageType =
@@ -132,13 +132,23 @@ export class MessagesApi {
     type: MessageType,
     file: File,
   ): Observable<IAttachmentUploadResponse> {
+    return from(type === 'Image' ? compressImage(file) : Promise.resolve(file)).pipe(
+      switchMap((prepared) => this.uploadPrepared(conversationId, type, prepared)),
+    );
+  }
+
+  private uploadPrepared(
+    conversationId: string,
+    type: MessageType,
+    file: File,
+  ): Observable<IAttachmentUploadResponse> {
     const formData = new FormData();
 
     formData.append('type', type.toString());
     formData.append('file', file, file.name);
 
     return this.http.post<IAttachmentUploadResponse>(
-      `${this.baseUrl}/conversations/${encodeURIComponent(conversationId)}/attachments`,
+      `${environment.hubUrl}/api/conversations/${encodeURIComponent(conversationId)}/attachments`,
       formData,
     );
   }
@@ -203,5 +213,39 @@ export class MessagesApi {
         params,
       },
     );
+  }
+}
+
+
+async function compressImage(file: File): Promise<File> {
+  const maxSide = 1600;
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size < 300 * 1024) return file;
+  try {
+    const bitmap = await createImageBitmap(file);
+    const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+    const width = Math.round(bitmap.width * scale);
+    const height = Math.round(bitmap.height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) {
+      bitmap.close();
+      return file;
+    }
+    const keepsAlpha = file.type !== 'image/jpeg';
+    if (!keepsAlpha) {
+      context.fillStyle = '#fff';
+      context.fillRect(0, 0, width, height);
+    }
+    context.drawImage(bitmap, 0, 0, width, height);
+    bitmap.close();
+    const mime = keepsAlpha ? 'image/webp' : 'image/jpeg';
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, mime, 0.82));
+    if (!blob || blob.type !== mime || blob.size >= file.size) return file;
+    const name = file.name.replace(/\.[^.]+$/, '') + (keepsAlpha ? '.webp' : '.jpg');
+    return new File([blob], name, { type: mime });
+  } catch {
+    return file;
   }
 }
