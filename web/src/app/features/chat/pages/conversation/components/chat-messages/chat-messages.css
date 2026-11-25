@@ -26,3 +26,7 @@
 @media (max-width:600px) { .imessage-message-list { gap:10px; padding:18px 14px; } .message-row { max-width:90%; } .message-bubble { padding:10px 12px; font-size:13px; } }
 
 @media (hover: none) { .media-image, .message-bubble video { max-width: 100%; height: auto; } }
+
+.voice-note { display: flex; flex-direction: column; gap: 4px; width: 260px; max-width: 100%; min-width: 0; }
+.voice-note audio { width: 100%; max-width: 100%; height: 36px; }
+.voice-label { display: block; font-size: 11px; opacity: .75; white-space: nowrap; }
