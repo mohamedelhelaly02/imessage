@@ -77,6 +77,9 @@ export class ChatList implements OnInit {
     await this._hub.joinConversation(conversation.id);
   }
 
+  isConversationRecording(id: string) {
+    return (this._conversationStore.recordingUsers().get(id)?.size ?? 0) > 0;
+  }
   isConversationTyping(id: string) {
     return this.typingConversations().has(id);
   }
