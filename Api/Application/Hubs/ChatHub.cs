@@ -29,7 +29,7 @@ internal sealed class ChatHub(
 
             await Groups.AddToGroupAsync(Context.ConnectionId, GetGroupName(userId));
 
-            var isFirstConnection = connectionTracker.AddConnection(userId, Context.ConnectionId);
+            var isFirstConnection = await connectionTracker.AddConnectionAsync(userId, Context.ConnectionId);
 
             if (isFirstConnection)
                 await NotifyRelatedUsersStatus(userId, true);
@@ -109,7 +109,7 @@ internal sealed class ChatHub(
                     }
                 }
             }
-            var isLastConnection = connectionTracker.RemoveConnection(
+            var isLastConnection = await connectionTracker.RemoveConnectionAsync(
                 userId,
                 Context.ConnectionId);
 
@@ -179,6 +179,8 @@ internal sealed class ChatHub(
             })
             .ToListAsync();
 
+        var onlineUserIds = await connectionTracker.GetOnlineUsersAsync(users.ConvertAll(u => u.Id));
+
         var onlineStatuses = users.ConvertAll(u => new
         {
             user = new
@@ -190,7 +192,7 @@ internal sealed class ChatHub(
                 u.ProfilePictureUrl,
                 u.LastSeenAtUtc
             },
-            isOnline = connectionTracker.IsOnline(u.Id)
+            isOnline = onlineUserIds.Contains(u.Id)
         });
 
         await Clients.Caller.SendAsync("OnlineStatus", onlineStatuses);
