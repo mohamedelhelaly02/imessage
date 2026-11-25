@@ -242,6 +242,7 @@
             "GROUP_TYPING": "{{count}} people are typing",
             "RECORDING": "recording a voice message",
             "GROUP_RECORDING": "{{count}} people are recording voice messages",
+            "SENDING_VOICE": "Sending voice message...",
             "VOICE_MESSAGE": "Voice message",
             "GROUP_SUBTITLE": "{{names}}",
             "GROUP_SUBTITLE_MORE": "{{names}} and {{count}} others",
