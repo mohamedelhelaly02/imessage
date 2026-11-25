@@ -150,3 +150,19 @@ app-language-switcher {
         display: none;
     }
 }
+
+@media (max-width: 760px) {
+    .app-shell:has(app-profile) app-sidebar {
+        display: none;
+    }
+
+    app-sidebar {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .blank-layout:has(app-conversation) app-footer {
+        display: none;
+    }
+}
