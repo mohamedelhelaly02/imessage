@@ -3,6 +3,7 @@ import { Component, DestroyRef, inject, input, OnDestroy, output, signal } from 
 import { IMessage, IMessageAttachment } from '../../../../services/messages-api';
 import { ConversationStore } from '../../../../services/store';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { catchError, EMPTY, tap } from 'rxjs';
 import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
@@ -27,6 +28,7 @@ export class ChatMessages {
   readonly quickReactions = ['👍', '❤️', '😂', '😮', '😢', '🙏'];
 
   readonly attachmentUrls = this._attachmentUrls.asReadonly();
+  private readonly _requestedUrls = new Set<string>();
 
   ngOnDestroy(): void {
     for (const url of Object.values(this.attachmentUrls())) URL.revokeObjectURL(url);
@@ -102,11 +104,16 @@ export class ChatMessages {
   }
 
   private loadAttachment(attachmentId: string): void {
-    if (this.attachmentUrls()[attachmentId]) return;
+    if (this.attachmentUrls()[attachmentId] || this._requestedUrls.has(attachmentId)) return;
+    this._requestedUrls.add(attachmentId);
 
     this._conversationStore
       .getAttachmentDownloadUrl(attachmentId)
-      .pipe(takeUntilDestroyed(this._destroyRef))
+      .pipe(
+        takeUntilDestroyed(this._destroyRef),
+        tap({ error: () => setTimeout(() => this._requestedUrls.delete(attachmentId), 10000) }),
+        catchError(() => EMPTY),
+      )
       .subscribe((url) => {
         this._attachmentUrls.update((urls) => ({ ...urls, [attachmentId]: url }));
       });
