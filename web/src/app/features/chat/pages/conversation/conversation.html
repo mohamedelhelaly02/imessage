@@ -31,6 +31,7 @@
   <app-chat-composer
     [replyTo]="replyMessage()"
     [disabled]="isLoading()"
+    [sendingVoice]="sendingVoice()"
     (onClearReply)="clearReply()"
     (onTyping)="onUserTyping()"
     (onRecordingChange)="onRecordingChange($event)"
