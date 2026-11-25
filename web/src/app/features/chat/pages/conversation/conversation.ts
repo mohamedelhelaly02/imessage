@@ -32,6 +32,10 @@ export class Conversation implements OnDestroy {
   readonly replyMessage = this.conversationStore.replyingToMessage;
 
   readonly hasOlderMessages = this.conversationStore.hasOlderMessages;
+  readonly recordingCount = computed(
+    () => this.conversationStore.recordingUsers().get(this.activeConversationId())?.size ?? 0,
+  );
+  private isRecordingVoice = false;
 
   constructor() {
     effect(() => {
@@ -234,8 +238,18 @@ export class Conversation implements OnDestroy {
       .filter((participant) => this.authStore.isUserTyping(conversation.id, participant.userId));
   }
 
+  onRecordingChange(isRecording: boolean): void {
+    const id = this.activeConversationId();
+    if (!id) return;
+    this.isRecordingVoice = isRecording;
+    if (isRecording) void this.hub.startRecordingVoice(id);
+    else void this.hub.stopRecordingVoice(id);
+  }
   ngOnDestroy(): void {
     if (this.typingTimeout) clearTimeout(this.typingTimeout);
+    if (this.isRecordingVoice && this.activeConversationId()) {
+      void this.hub.stopRecordingVoice(this.activeConversationId());
+    }
     if (this.activeConversationId()) void this.hub.leaveConversation(this.activeConversationId());
     this.conversationStore.resetState();
   }
