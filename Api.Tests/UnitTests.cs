@@ -1,3 +1,4 @@
+using Xunit;
 using Api.Infrastructure.Identity;
 using Api.Shared.Abstraction;
 
