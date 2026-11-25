@@ -38,7 +38,14 @@
           }
         </span>
         <span class="imessage-chat-bottom">
-          @if (isConversationTyping(conversation.id)) {
+          @if (isConversationRecording(conversation.id)) {
+            <span class="chat-header__status chat-header__status--typing">
+              {{ 'CHAT.LIST.RECORDING' | translate }}
+              <span class="typing-dots" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </span>
+            </span>
+          } @else if (isConversationTyping(conversation.id)) {
             <span class="chat-header__status chat-header__status--typing">
               {{ 'CHAT.LIST.TYPING' | translate }}
               <span class="typing-dots" [attr.aria-label]="'CHAT.LIST.TYPING' | translate">
