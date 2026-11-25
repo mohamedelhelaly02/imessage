@@ -30,3 +30,11 @@ app-chat-messages {
 .message-toolbar button,.search-results button { border:1px solid #dfe6f0; border-radius:10px; background:white; color:#35445a; padding:7px 10px; cursor:pointer; }
 .search-results { display:flex; gap:6px; overflow:auto; padding:4px 16px; }
 .chat-error { margin:0; padding:6px 16px; color:#b42318; font-size:12px; }
+
+
+@media (max-width: 600px) {
+    .message-toolbar { gap: 6px; padding: 6px 10px; }
+    .message-toolbar input { padding: 6px 10px; font-size: 16px; }
+    .message-toolbar button, .search-results button { padding: 6px 9px; font-size: 13px; white-space: nowrap; }
+    .search-results, .chat-error { padding-inline: 10px; }
+}
