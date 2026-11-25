@@ -8,13 +8,13 @@
 
 [[redirects]]
   from = "/api/*"
-  to = "http://imessage-api-me.runasp.net/api/:splat"
+  to = "https://imessage-api-me.runasp.net/api/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/hubs/*"
-  to = "http://imessage-api-me.runasp.net/hubs/:splat"
+  to = "https://imessage-api-me.runasp.net/hubs/:splat"
   status = 200
   force = true
 
