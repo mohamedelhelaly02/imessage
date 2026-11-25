@@ -14,6 +14,7 @@ import { RouterLink } from '@angular/router';
 })
 export class ChatHeader {
   participants = input.required<IParticipant[]>();
+  recordingCount = input(0);
 
   private readonly _authStore = inject(AuthStore);
   readonly conversation = input.required<IConversation | null>();
