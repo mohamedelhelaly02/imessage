@@ -232,6 +232,7 @@
         },
         "LIST": {
             "TYPING": "يكتب",
+            "RECORDING": "يسجل رسالة صوتية",
             "LAST_ACTIVE": "آخر نشاط",
             "START_NOW": "ابدأ المحادثة الآن",
             "LAST_MESSAGE_SENT": "تم إرسال آخر رسالة"
@@ -239,6 +240,9 @@
         "HEADER": {
             "TYPING": "يكتب",
             "GROUP_TYPING": "{{count}} أشخاص يكتبون",
+            "RECORDING": "يسجل رسالة صوتية",
+            "GROUP_RECORDING": "{{count}} أشخاص يسجلون رسائل صوتية",
+            "VOICE_MESSAGE": "رسالة صوتية",
             "GROUP_SUBTITLE": "{{names}}",
             "GROUP_SUBTITLE_MORE": "{{names}} و{{count}} آخرين",
             "ONLINE": "متصل",
