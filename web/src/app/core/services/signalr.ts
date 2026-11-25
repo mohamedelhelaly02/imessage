@@ -100,6 +100,17 @@ export class SignalrService {
     } catch (error) {}
   }
 
+  async startRecordingVoice(conversationId: string): Promise<void> {
+    try {
+      await this._hubConnection.invoke('StartRecordingVoice', conversationId);
+    } catch (error) {}
+  }
+
+  async stopRecordingVoice(conversationId: string): Promise<void> {
+    try {
+      await this._hubConnection.invoke('StopRecordingVoice', conversationId);
+    } catch (error) {}
+  }
   async joinConversation(conversationId: string): Promise<void> {
     try {
       await this._hubConnection.invoke('JoinConversation', conversationId);
@@ -159,6 +170,13 @@ export class SignalrService {
       this._authStore.userStopedTyping(conversationId, userId);
     });
 
+    this._hubConnection.on('UserRecordingVoice', (conversationId, userId) => {
+      this._conversationStore.userRecordingVoice(conversationId, userId);
+    });
+
+    this._hubConnection.on('UserStoppedRecordingVoice', (conversationId, userId) => {
+      this._conversationStore.userStoppedRecordingVoice(conversationId, userId);
+    });
     this._hubConnection.on('MessageCreated', (event: IMessage) => this._messageCreated.next(event));
     this._hubConnection.on('MessageEdited', (event: IMessage) => this._messageEdited.next(event));
     this._hubConnection.on('MessageDeleted', event => this._messageDeleted.next(event));
