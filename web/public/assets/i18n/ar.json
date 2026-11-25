@@ -242,6 +242,7 @@
             "GROUP_TYPING": "{{count}} أشخاص يكتبون",
             "RECORDING": "يسجل رسالة صوتية",
             "GROUP_RECORDING": "{{count}} أشخاص يسجلون رسائل صوتية",
+            "SENDING_VOICE": "جاري إرسال الرسالة الصوتية...",
             "VOICE_MESSAGE": "رسالة صوتية",
             "GROUP_SUBTITLE": "{{names}}",
             "GROUP_SUBTITLE_MORE": "{{names}} و{{count}} آخرين",
