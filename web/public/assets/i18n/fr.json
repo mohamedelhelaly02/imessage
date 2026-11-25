@@ -232,6 +232,7 @@
         },
         "LIST": {
             "TYPING": "écrit",
+            "RECORDING": "enregistre un message vocal",
             "LAST_ACTIVE": "Dernière activité",
             "START_NOW": "Commencer la conversation maintenant",
             "LAST_MESSAGE_SENT": "Dernier message envoyé"
@@ -239,6 +240,9 @@
         "HEADER": {
             "TYPING": "écrit",
             "GROUP_TYPING": "{{count}} personnes sont en train d’écrire",
+            "RECORDING": "enregistre un message vocal",
+            "GROUP_RECORDING": "{{count}} personnes enregistrent un message vocal",
+            "VOICE_MESSAGE": "Message vocal",
             "GROUP_SUBTITLE": "{{names}}",
             "GROUP_SUBTITLE_MORE": "{{names}} et {{count}} autres",
             "ONLINE": "en ligne",
