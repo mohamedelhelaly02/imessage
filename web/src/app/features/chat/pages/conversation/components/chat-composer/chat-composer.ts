@@ -1,7 +1,9 @@
 import { Component, input, output, signal } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 import { IMessage } from '../../../../services/messages-api';
 
 @Component({
+  imports: [TranslatePipe],
   selector: 'app-chat-composer',
   styleUrl: './chat-composer.css',
   templateUrl: './chat-composer.html',
@@ -10,6 +12,7 @@ export class ChatComposer {
   readonly message = signal('');
   readonly replyTo = input<IMessage | null>(null);
   readonly disabled = input(false);
+  readonly sendingVoice = input(false);
   readonly onClearReply = output<void>();
   readonly isRecording = signal(false);
   readonly onRecordingChange = output<boolean>();
@@ -23,6 +26,7 @@ export class ChatComposer {
 
   private recorder?: MediaRecorder;
   private recordingChunks: BlobPart[] = [];
+  private isStarting = false;
 
   replyPreview(reply: IMessage): string {
     if (reply.deletedAtUtc) return 'Message deleted';
@@ -69,20 +73,32 @@ export class ChatComposer {
       this.recorder.stop();
       return;
     }
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (this.isStarting) return;
+    this.isStarting = true;
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch {
+      return;
+    } finally {
+      this.isStarting = false;
+    }
+
     this.recordingChunks = [];
-    this.recorder = new MediaRecorder(stream);
-    this.recorder.ondataavailable = event => {
+    const recorder = new MediaRecorder(stream);
+    this.recorder = recorder;
+    recorder.ondataavailable = (event) => {
       if (event.data.size) this.recordingChunks.push(event.data);
     };
-    this.recorder.onstop = () => {
-      const audio = new Blob(this.recordingChunks, { type: this.recorder?.mimeType || 'audio/webm' });
-      stream.getTracks().forEach(track => track.stop());
-      if (audio.size) this.onVoiceMessage.emit(audio);
+    recorder.onstop = () => {
+      const audio = new Blob(this.recordingChunks, { type: recorder.mimeType || 'audio/webm' });
+      stream.getTracks().forEach((track) => track.stop());
       this.isRecording.set(false);
       this.onRecordingChange.emit(false);
+      if (audio.size) this.onVoiceMessage.emit(audio);
     };
-    this.recorder.start();
+    recorder.start();
     this.isRecording.set(true);
     this.onRecordingChange.emit(true);
   }
