@@ -70,6 +70,14 @@ jobs:
           dotnet ef database update --project Api \
             --connection "Server=$DB_HOST_PUBLIC,1433;Database=$DB_NAME;User Id=$DB_USER;Password=$DB_PASSWORD;Encrypt=True;TrustServerCertificate=True;"
 
+      - name: Take site offline (release locked files)
+        env:
+          FTP_PASS: ${{ secrets.MONSTER_FTP_PASSWORD }}
+        run: |
+          echo "<html><body>Updating, back in a minute.</body></html>" > app_offline.htm
+          curl --ssl-reqd --silent --show-error --ftp-create-dirs -u "site111164:$FTP_PASS" -T app_offline.htm ftp://site111164.siteasp.net/wwwroot/app_offline.htm || echo "offline step skipped"
+          sleep 8
+
       - name: Upload to MonsterASP (FTPS)
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -79,3 +87,10 @@ jobs:
           protocol: ftps
           local-dir: ./publish/
           server-dir: /wwwroot/
+
+      - name: Bring site back online
+        if: always()
+        env:
+          FTP_PASS: ${{ secrets.MONSTER_FTP_PASSWORD }}
+        run: |
+          curl --ssl-reqd --silent --show-error -u "site111164:$FTP_PASS" ftp://site111164.siteasp.net/ -Q "DELE /wwwroot/app_offline.htm" || echo "nothing to delete"
