@@ -16,6 +16,7 @@
       <path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle>
     </svg>
   </button>
+  @if (sendingVoice()) { <span class="composer-sending">{{ 'CHAT.HEADER.SENDING_VOICE' | translate }}</span> }
   <div class="composer-input-wrapper">
     <textarea class="composer-textarea" rows="1" placeholder="Message" [disabled]="disabled()"
       [value]="message()" (input)="onMessageInput($event)" (keydown.enter)="$event.preventDefault(); sendMessage()"></textarea>
