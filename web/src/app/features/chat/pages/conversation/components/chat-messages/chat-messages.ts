@@ -3,9 +3,10 @@ import { Component, DestroyRef, inject, input, OnDestroy, output, signal } from 
 import { IMessage, IMessageAttachment } from '../../../../services/messages-api';
 import { ConversationStore } from '../../../../services/store';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
-  imports: [DatePipe, DecimalPipe],
+  imports: [DatePipe, DecimalPipe, TranslatePipe],
   selector: 'app-chat-messages',
   styleUrl: './chat-messages.css',
   templateUrl: './chat-messages.html',
