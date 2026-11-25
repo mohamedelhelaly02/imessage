@@ -24,3 +24,5 @@
 .reaction-list button { font-size:11px; box-shadow:0 1px 3px #0001; }
 .empty-messages { align-self:center; margin:auto; color:#8290a4; }
 @media (max-width:600px) { .imessage-message-list { gap:10px; padding:18px 14px; } .message-row { max-width:90%; } .message-bubble { padding:10px 12px; font-size:13px; } }
+
+@media (hover: none) { .media-image, .message-bubble video { max-width: 100%; height: auto; } }
