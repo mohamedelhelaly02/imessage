@@ -45,7 +45,7 @@ public class ResultTests
         var result = Result<int>.Success(42);
 
         Assert.True(result.IsSuccess);
-        Assert.Equal(42, result.Value);
+        Assert.Equal(43, result.Value); // deliberately wrong, demo only
         Assert.Null(result.Error);
     }
 }
