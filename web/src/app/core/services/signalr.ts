@@ -10,7 +10,7 @@ import { IMessage } from '../../features/chat/services/messages-api';
 @Service()
 export class SignalrService {
   private _hubConnection!: HubConnection;
-  private readonly _hubUrl = `${environment.apiUrl}/hubs/chat`;
+  private readonly _hubUrl = `${environment.hubUrl}/hubs/chat`;
   private readonly _authStore = inject(AuthStore);
   private readonly _conversationStore = inject(ConversationStore);
   private readonly _messageCreated = new Subject<IMessage>();
