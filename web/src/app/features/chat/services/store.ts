@@ -32,6 +32,9 @@ export class ConversationStore {
   readonly isLoading = this._isLoading.asReadonly();
   readonly error = this._error.asReadonly();
   readonly typingConversations = this._typingConversations.asReadonly();
+  private readonly _recordingUsers = signal<Map<string, Set<string>>>(new Map());
+  private readonly _recordingTimers = new Map<string, ReturnType<typeof setTimeout>>();
+  readonly recordingUsers = this._recordingUsers.asReadonly();
   readonly conversations = this._conversations.asReadonly();
   readonly selectedConversation = this._selectedConversation.asReadonly();
   readonly messages = this._messages.asReadonly();
@@ -303,6 +306,37 @@ export class ConversationStore {
     });
   }
 
+  userRecordingVoice(conversationId: string, userId: string): void {
+    if (!conversationId || !userId) return;
+    const key = `${conversationId}:${userId}`;
+    clearTimeout(this._recordingTimers.get(key));
+    this.setRecording(conversationId, userId, true);
+    // Safety net: clear the indicator if the stop signal never arrives.
+    this._recordingTimers.set(
+      key,
+      setTimeout(() => this.userStoppedRecordingVoice(conversationId, userId), 60000),
+    );
+  }
+
+  userStoppedRecordingVoice(conversationId: string, userId: string): void {
+    if (!conversationId || !userId) return;
+    const key = `${conversationId}:${userId}`;
+    clearTimeout(this._recordingTimers.get(key));
+    this._recordingTimers.delete(key);
+    this.setRecording(conversationId, userId, false);
+  }
+
+  private setRecording(conversationId: string, userId: string, isRecording: boolean): void {
+    this._recordingUsers.update((current) => {
+      const updated = new Map(current);
+      const users = new Set(updated.get(conversationId) ?? []);
+      if (isRecording) users.add(userId);
+      else users.delete(userId);
+      if (users.size > 0) updated.set(conversationId, users);
+      else updated.delete(conversationId);
+      return updated;
+    });
+  }
   conversationStartedTyping(conversationId: string): void {
     if (!conversationId) return;
     this.updateConversationTyping(conversationId);
