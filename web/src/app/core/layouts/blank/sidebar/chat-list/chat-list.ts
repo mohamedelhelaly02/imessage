@@ -1,11 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { ConversationStore } from '../../../../../features/chat/services/store';
 import { IConversation } from '../../../../../features/chat/models/conversation';
 import { AuthStore } from '../../../../../features/auth/services/store';
 import { DatePipe } from '@angular/common';
 import { TranslatePipe } from '@ngx-translate/core';
 import { SignalrService } from '../../../../services/signalr';
-import { PresenceStore } from '../../../../services/presence-store';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   imports: [DatePipe, TranslatePipe],
@@ -17,11 +17,21 @@ export class ChatList implements OnInit {
   private readonly _conversationStore = inject(ConversationStore);
   private readonly _authStore = inject(AuthStore);
   private readonly _hub = inject(SignalrService);
-  private readonly _presence = inject(PresenceStore);
   readonly conversations = this._conversationStore.conversations;
   readonly currentUser = this._authStore.user;
   readonly selected = this._conversationStore.selectedConversation;
   readonly typingConversations = this._conversationStore.typingConversations;
+
+  constructor() {
+    // Runs when the hub connects or reconnects and whenever the conversation list changes.
+    effect(() => {
+      if (!this._hub.isConnected()) return;
+      const userIds = this.conversations()
+        .map((c) => this.getOtherParticipant(c)?.userId)
+        .filter((userId): userId is string => !!userId);
+      if (userIds.length > 0) void this._hub.getOnlineStatus([...new Set(userIds)]);
+    });
+  }
 
   ngOnInit(): void {
     this._conversationStore.loadConversations().subscribe();
@@ -36,7 +46,10 @@ export class ChatList implements OnInit {
   }
 
   isUserOnline(conversation: IConversation) {
-    return this._presence.isOnline(this.getOtherParticipant(conversation)?.userId);
+    var otherParticipant = this.getOtherParticipant(conversation);
+    if (!otherParticipant) return;
+
+    return this._authStore.isOnline(otherParticipant.userId);
   }
 
   getDisplayName(conversation: IConversation) {
