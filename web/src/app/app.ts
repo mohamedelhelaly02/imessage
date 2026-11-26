@@ -4,6 +4,7 @@ import { AuthStore } from './features/auth/services/store';
 import { SignalrService } from './core/services/signalr';
 import { NgxSonnerToaster } from 'ngx-sonner';
 import { ConversationStore } from './features/chat/services/store';
+import { PresenceSync } from './core/services/presence-sync';
 
 @Component({
   imports: [RouterOutlet, NgxSonnerToaster],
@@ -15,6 +16,8 @@ export class App {
   private readonly _authStore = inject(AuthStore);
   private readonly _conversationStore = inject(ConversationStore);
   private readonly _signalrService = inject(SignalrService);
+  // Instantiated here so presence sync runs for the whole session.
+  private readonly _presenceSync = inject(PresenceSync);
 
   constructor() {
     effect(() => {
