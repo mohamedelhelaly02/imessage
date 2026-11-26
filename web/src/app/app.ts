@@ -19,11 +19,10 @@ export class App {
   constructor() {
     effect(() => {
       const isAuthenticated = this._authStore.isAuthenticated();
-      const token = this._authStore.accessToken();
 
-      if (isAuthenticated && token) {
+      if (isAuthenticated) {
         this.connect().then(() => this._conversationStore.resetState());
-      } else if (!isAuthenticated) {
+      } else {
         this.disconnect();
       }
     });
