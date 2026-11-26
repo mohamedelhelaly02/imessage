@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import { ConversationStore } from '../../../../../features/chat/services/store';
 import { IConversation } from '../../../../../features/chat/models/conversation';
 import { AuthStore } from '../../../../../features/auth/services/store';
@@ -22,17 +22,19 @@ export class ChatList implements OnInit {
   readonly selected = this._conversationStore.selectedConversation;
   readonly typingConversations = this._conversationStore.typingConversations;
 
-  ngOnInit(): void {
-    this._conversationStore.loadConversations().subscribe(() => {
-      this.loadOnlineUserStatus();
+  constructor() {
+    // Runs when the hub connects or reconnects and whenever the conversation list changes.
+    effect(() => {
+      if (!this._hub.isConnected()) return;
+      const userIds = this.conversations()
+        .map((c) => this.getOtherParticipant(c)?.userId)
+        .filter((userId): userId is string => !!userId);
+      if (userIds.length > 0) void this._hub.getOnlineStatus([...new Set(userIds)]);
     });
   }
-  private async loadOnlineUserStatus() {
-    const userIds = this.conversations()
-      .map((c) => this.getOtherParticipant(c)?.userId)
-      .filter((userId): userId is string => !!userId);
-    if (userIds.length === 0) return;
-    await this._hub.getOnlineStatus(userIds);
+
+  ngOnInit(): void {
+    this._conversationStore.loadConversations().subscribe();
   }
 
   getOtherParticipant(conversation: IConversation) {
