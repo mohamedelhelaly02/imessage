@@ -1,15 +1,17 @@
-import { inject, Service } from '@angular/core';
+import { inject, Service, signal } from '@angular/core';
 import { HubConnection } from '@microsoft/signalr';
 import * as signalr from '@microsoft/signalr';
 import { environment } from '../../../environments/environment';
 import { AuthStore } from '../../features/auth/services/store';
 import { ConversationStore } from '../../features/chat/services/store';
-import { toast } from 'ngx-sonner';
 import { Observable, Subject } from 'rxjs';
 import { IMessage } from '../../features/chat/services/messages-api';
 @Service()
 export class SignalrService {
   private _hubConnection!: HubConnection;
+  private _joinedConversationId: string | null = null;
+  private readonly _isConnected = signal(false);
+  readonly isConnected = this._isConnected.asReadonly();
   private readonly _hubUrl = `${environment.hubUrl}/hubs/chat`;
   private readonly _authStore = inject(AuthStore);
   private readonly _conversationStore = inject(ConversationStore);
@@ -43,17 +45,29 @@ export class SignalrService {
       .withUrl(this._hubUrl, {
         accessTokenFactory: () => this._authStore.accessToken() || '',
       })
-      .withAutomaticReconnect()
+      .withAutomaticReconnect({
+        // Never give up: 0s, 2s, 5s, 10s, then every 15s.
+        nextRetryDelayInMilliseconds: (context: signalr.RetryContext) =>
+          [0, 2000, 5000, 10000][context.previousRetryCount] ?? 15000,
+      })
       .build();
 
     this.registerHubEvents();
 
     try {
       await this._hubConnection.start();
+      this._isConnected.set(true);
       console.log('Hub Connnected.');
     } catch (error) {
       console.error(`Hub connection error: ${error}`);
+      this.retryStart();
     }
+  }
+
+  private retryStart(): void {
+    setTimeout(() => {
+      if (this._authStore.isAuthenticated()) void this.startConnection();
+    }, 5000);
   }
 
   async stopConnection(): Promise<void> {
@@ -71,6 +85,7 @@ export class SignalrService {
   }
 
   async getOnlineStatus(userIds: string[]) {
+    if (this._hubConnection?.state !== signalr.HubConnectionState.Connected) return;
     try {
       await this._hubConnection.invoke('GetOnlineStatus', userIds);
     } catch (error) {}
@@ -113,6 +128,7 @@ export class SignalrService {
   }
   async joinConversation(conversationId: string): Promise<void> {
     try {
+      this._joinedConversationId = conversationId;
       await this._hubConnection.invoke('JoinConversation', conversationId);
       console.log(`Joined conversation: ${conversationId}`);
     } catch (error) {}
@@ -120,6 +136,7 @@ export class SignalrService {
 
   async leaveConversation(conversationId: string): Promise<void> {
     try {
+      if (this._joinedConversationId === conversationId) this._joinedConversationId = null;
       await this._hubConnection.invoke('LeaveConversation', conversationId);
     } catch (error) {}
   }
@@ -127,19 +144,25 @@ export class SignalrService {
   private registerHubEvents(): void {
     this._hubConnection.on('ReceiveCallerConnected', () => {
       console.log('User connected.');
-      toast.success('User Connected');
     });
 
     this._hubConnection.onreconnecting((error) => {
       console.warn('signalr reconnecting', error);
+      this._isConnected.set(false);
+      this._authStore.clearOnline();
     });
 
     this._hubConnection.onreconnected((connectionId) => {
       console.log('signalr reconnected:', connectionId);
+      this._isConnected.set(true);
+      if (this._joinedConversationId) void this.joinConversation(this._joinedConversationId);
     });
 
     this._hubConnection.onclose((error) => {
       console.log(error);
+      this._isConnected.set(false);
+      this._authStore.clearOnline();
+      this.retryStart();
     });
 
     this._hubConnection.on('UserOnline', (user) => {
