@@ -174,6 +174,10 @@ export class AuthStore {
     );
   }
 
+  clearOnline() {
+    this._onlineUsers.set(new Set());
+  }
+
   isOnline(userId: string) {
     return [...this._onlineUsers()].some((u) => u.id === userId);
   }
