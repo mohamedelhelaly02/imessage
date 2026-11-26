@@ -8,6 +8,7 @@ import { User } from '../models/user';
 import { RegisterRequest } from '../models/register-request';
 import { LoginCredentails } from '../models/credentails';
 import { AuthResponse, LoginResponse } from '../models/auth-response';
+import { IOnlineUser } from '../models/online-user';
 import { toast } from 'ngx-sonner';
 import { ConfirmEmailRequest } from '../models/confirm-email';
 
@@ -22,6 +23,7 @@ export class AuthStore {
   private readonly _isLoading = signal<boolean>(false);
   private readonly _error = signal<string | null>(null);
   private readonly _requiresTwoFactor = signal<boolean>(false);
+  private readonly _onlineUsers = signal<Set<User>>(new Set());
   private readonly _typingUsers = signal<Map<string, Set<string>>>(new Map());
 
   readonly user = this._user.asReadonly();
@@ -29,6 +31,7 @@ export class AuthStore {
   readonly isLoading = this._isLoading.asReadonly();
   readonly error = this._error.asReadonly();
   readonly requiresTwoFactor = this._requiresTwoFactor.asReadonly();
+  readonly onlineUsers = this._onlineUsers.asReadonly();
   readonly typingUsers = this._typingUsers.asReadonly();
 
   readonly isAuthenticated = computed(() => this._user() !== null && this._accessToken() !== null);
@@ -163,6 +166,40 @@ export class AuthStore {
     setTimeout(() => {
       this._error.set('');
     }, 3000);
+  }
+
+  userOnline(user: User) {
+    this._onlineUsers.update(
+      (users) => new Set([...[...users].filter((onlineUser) => onlineUser.id !== user.id), user]),
+    );
+  }
+
+  clearOnline() {
+    this._onlineUsers.set(new Set());
+  }
+
+  isOnline(userId: string) {
+    return [...this._onlineUsers()].some((u) => u.id === userId);
+  }
+
+  userOffline(user: User) {
+    this._onlineUsers.update(
+      (users) => new Set([...users].filter((onlineUser) => onlineUser.id !== user.id)),
+    );
+  }
+
+  onlineStatus(onlineStatus: IOnlineUser[]) {
+    this._onlineUsers.update((users) => {
+      const requestedUserIds = new Set(onlineStatus.map((status) => status.user.id));
+
+      const updated = new Set([...users].filter((user) => !requestedUserIds.has(user.id)));
+
+      onlineStatus
+        .filter((status) => status.isOnline)
+        .forEach((status) => updated.add(status.user));
+
+      return updated;
+    });
   }
 
   userTyping(conversationId: string, userId: string) {
