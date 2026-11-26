@@ -5,6 +5,7 @@ import { AuthStore } from '../../../../../auth/services/store';
 import { DatePipe } from '@angular/common';
 import { IParticipant } from '../../../../models/participant';
 import { RouterLink } from '@angular/router';
+import { PresenceStore } from '../../../../../../core/services/presence-store';
 
 @Component({
   imports: [TranslatePipe, DatePipe, RouterLink],
@@ -17,6 +18,7 @@ export class ChatHeader {
   recordingCount = input(0);
 
   private readonly _authStore = inject(AuthStore);
+  private readonly _presence = inject(PresenceStore);
   readonly conversation = input.required<IConversation | null>();
   readonly currentUserId = this._authStore.user()?.id;
 
@@ -65,8 +67,6 @@ export class ChatHeader {
     return this.getOtherParticipant(conversation)?.lastSeenAtUtc ?? null;
   }
   isUserOnline(conversation: IConversation) {
-    const id = this.getOtherParticipant(conversation)?.userId;
-    if (!id) return false;
-    return this._authStore.isOnline(id);
+    return this._presence.isOnline(this.getOtherParticipant(conversation)?.userId);
   }
 }
