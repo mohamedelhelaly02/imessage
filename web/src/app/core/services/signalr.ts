@@ -6,7 +6,6 @@ import { AuthStore } from '../../features/auth/services/store';
 import { ConversationStore } from '../../features/chat/services/store';
 import { Observable, Subject } from 'rxjs';
 import { IMessage } from '../../features/chat/services/messages-api';
-import { PresenceStore } from './presence-store';
 @Service()
 export class SignalrService {
   private _hubConnection!: HubConnection;
@@ -16,7 +15,6 @@ export class SignalrService {
   private readonly _hubUrl = `${environment.hubUrl}/hubs/chat`;
   private readonly _authStore = inject(AuthStore);
   private readonly _conversationStore = inject(ConversationStore);
-  private readonly _presence = inject(PresenceStore);
   private readonly _messageCreated = new Subject<IMessage>();
   private readonly _messageEdited = new Subject<IMessage>();
   private readonly _messageDeleted = new Subject<{ id: string; conversationId: string; deletedAtUtc: string }>();
@@ -73,7 +71,6 @@ export class SignalrService {
   }
 
   async stopConnection(): Promise<void> {
-    this._presence.reset();
     if (this._hubConnection) {
       try {
         await this._hubConnection.stop();
@@ -152,7 +149,7 @@ export class SignalrService {
     this._hubConnection.onreconnecting((error) => {
       console.warn('signalr reconnecting', error);
       this._isConnected.set(false);
-      this._presence.reset();
+      this._authStore.clearOnline();
     });
 
     this._hubConnection.onreconnected((connectionId) => {
@@ -164,20 +161,20 @@ export class SignalrService {
     this._hubConnection.onclose((error) => {
       console.log(error);
       this._isConnected.set(false);
-      this._presence.reset();
+      this._authStore.clearOnline();
       this.retryStart();
     });
 
     this._hubConnection.on('UserOnline', (user) => {
-      this._presence.markOnline(user.id);
+      this._authStore.userOnline(user);
     });
 
     this._hubConnection.on('UserOffline', (user) => {
-      this._presence.markOffline(user.id);
+      this._authStore.userOffline(user);
     });
 
     this._hubConnection.on('OnlineStatus', (onlineStatus) => {
-      this._presence.applySnapshot(onlineStatus);
+      this._authStore.onlineStatus(onlineStatus);
     });
 
     this._hubConnection.on('UserTyping', (conversationId, userId) => {
